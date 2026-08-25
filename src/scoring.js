@@ -9,12 +9,13 @@
 export const TOTAL_MANCHES = 10
 
 export const PRIMES = [
-  { id: 'q14jaune', label: '14 Jaune', court: '14', points: 10, max: 1, teinte: 'jaune' },
-  { id: 'q14vert', label: '14 Vert', court: '14', points: 10, max: 1, teinte: 'vert' },
-  { id: 'q14mauve', label: '14 Mauve', court: '14', points: 20, max: 1, teinte: 'mauve' },
-  { id: 'pirateParSk', label: 'Pirate pris par le Skull King', court: 'Pirate', points: 30, max: 5, teinte: 'or' },
-  { id: 'skParSirene', label: 'Skull King pris par une Sirène', court: 'Skull King', points: 50, max: 1, teinte: 'or' },
-  { id: 'sireneParPirate', label: 'Sirène prise par un Pirate', court: 'Sirène', points: 20, max: 2, teinte: 'or' },
+  { id: 'q14jaune', label: '14 Jaune', points: 10, max: 1, teinte: 'jaune' },
+  { id: 'q14vert', label: '14 Vert', points: 10, max: 1, teinte: 'vert' },
+  { id: 'q14mauve', label: '14 Mauve', points: 10, max: 1, teinte: 'mauve' },
+  { id: 'q14noir', label: '14 Noir (atout)', points: 20, max: 1, teinte: 'noir' },
+  { id: 'sireneParPirate', label: 'Sirène capturée par un pirate', points: 20, max: 2, teinte: 'or' },
+  { id: 'pirateParSk', label: 'Pirate capturé par le Skull King', points: 30, max: 6, teinte: 'or' },
+  { id: 'skParSirene', label: 'Skull King capturé par une sirène', points: 40, max: 1, teinte: 'or' },
 ]
 
 export function totalPrimes(primes = {}) {

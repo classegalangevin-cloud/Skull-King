@@ -12,6 +12,7 @@
   --jaune: #e0ae2b;
   --vert: #4e8f5b;
   --mauve: #9061be;
+  --noir-carte: #cfc9bd;
 
   --display: 'Pirata One', 'Papyrus', fantasy;
   --titre: 'Cinzel', Georgia, 'Times New Roman', serif;
@@ -48,7 +49,7 @@ body::before {
   content: '';
   position: fixed;
   inset: -10%;
-  background-image: url('/fond-skull-king.jpg');
+  background-image: var(--fond);
   background-size: cover;
   background-position: center;
   filter: blur(18px) saturate(0.85) brightness(0.42);
@@ -521,6 +522,11 @@ h2 {
 
 .etiquette-prime.mauve b {
   color: var(--mauve);
+}
+
+.etiquette-prime.noir b {
+  color: var(--noir-carte);
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
 }
 
 .etiquette-prime small {
