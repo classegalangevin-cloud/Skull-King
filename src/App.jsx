@@ -678,6 +678,33 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [partie && partie.manche, partie && partie.etape, vue])
 
+  // Sur téléphone, l'écran ne doit pas s'éteindre entre deux manches.
+  const enPartie = partie !== null
+  useEffect(() => {
+    if (!enPartie || !('wakeLock' in navigator)) return
+    let verrou = null
+    let abandonne = false
+
+    const demander = async () => {
+      try {
+        verrou = await navigator.wakeLock.request('screen')
+      } catch {
+        /* refusé par le navigateur ou batterie trop faible */
+      }
+    }
+    const reprendre = () => {
+      if (document.visibilityState === 'visible' && !abandonne) demander()
+    }
+
+    demander()
+    document.addEventListener('visibilitychange', reprendre)
+    return () => {
+      abandonne = true
+      document.removeEventListener('visibilitychange', reprendre)
+      if (verrou) verrou.release().catch(() => {})
+    }
+  }, [enPartie])
+
   const demarrer = (joueurs) => {
     setPartie({ joueurs, manche: 1, etape: 'paris', manches: {} })
     setVue('manche')
