@@ -1,0 +1,11 @@
+{
+  "appId": "fr.livredebord.skullking",
+  "appName": "Skull King",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#0B0908"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
