@@ -735,83 +735,80 @@ button.etat.scelle {
 
 /* ---------- Le Kraken ---------- */
 
-.bascule-kraken {
+/* --- La pastille, posée dans l'en-tête à côté du numéro de manche --- */
+
+.titre-manche {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  text-align: left;
-  font-family: var(--corps);
-  color: var(--os-terne);
-  padding: 11px 13px;
-  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+
+.puce-kraken {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 7px;
   border: var(--bord);
-  border-radius: 4px;
+  border-radius: 999px;
   background: rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  transition: border-color 0.25s, color 0.25s, background 0.25s;
-}
-
-.bascule-kraken .marque-kraken {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  flex: none;
-  border-radius: 50%;
-  border: 1px solid rgba(192, 138, 46, 0.3);
-  background: rgba(0, 0, 0, 0.35);
-  transition: transform 0.3s, border-color 0.25s, background 0.25s;
-}
-
-.bascule-kraken .texte-kraken {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
-}
-
-.bascule-kraken .texte-kraken b {
+  color: var(--os-terne);
   font-family: var(--titre);
-  font-size: 13px;
-  letter-spacing: 0.16em;
+  font-size: 11px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.25s, border-color 0.25s, background 0.25s;
 }
 
-.bascule-kraken .texte-kraken small {
-  font-size: 14px;
-  color: rgba(237, 224, 196, 0.45);
-}
-
-.bascule-kraken .voyant-kraken {
-  width: 15px;
-  height: 15px;
+.puce-kraken svg {
   flex: none;
-  border-radius: 3px;
-  border: 1px solid rgba(192, 138, 46, 0.5);
-  transition: background 0.25s, box-shadow 0.25s;
 }
 
-.bascule-kraken.actif {
+.puce-kraken.actif {
   color: var(--or-vif);
   border: var(--bord-vif);
-  background: rgba(74, 28, 24, 0.4);
-}
-
-.bascule-kraken.actif .marque-kraken {
-  transform: rotate(-8deg) scale(1.06);
-  border-color: rgba(239, 196, 99, 0.65);
   background: rgba(74, 28, 24, 0.55);
+  box-shadow: 0 0 12px rgba(239, 196, 99, 0.22);
 }
 
-.bascule-kraken.actif .texte-kraken small {
-  color: rgba(239, 196, 99, 0.75);
+/* --- L'emprise : huit tentacules agrippées aux quatre coins --- */
+
+/* z-index négatif : un élément positionné à 0 passerait devant les panneaux,
+   qui ne sont pas positionnés. Les tentacules doivent rester en arrière-plan. */
+.kraken-emprise {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
 }
 
-.bascule-kraken.actif .voyant-kraken {
-  background: var(--or-vif);
-  box-shadow: 0 0 10px rgba(239, 196, 99, 0.6);
+/* L'opacité finale est la valeur de base : en « mouvement réduit », la règle
+   globale coupe l'animation, et des tentacules restées à 0 seraient invisibles. */
+.kraken-griffe {
+  position: absolute;
+  width: clamp(132px, 38vw, 214px);
+  height: clamp(132px, 38vw, 214px);
+  opacity: 0.92;
+  animation: kraken-agrippe 900ms ease-out;
+}
+
+.kraken-griffe.hg { top: 0; left: 0; }
+.kraken-griffe.hd { top: 0; right: 0; transform: scaleX(-1); }
+.kraken-griffe.bg { bottom: 0; left: 0; transform: scaleY(-1); }
+.kraken-griffe.bd { bottom: 0; right: 0; transform: scale(-1, -1); }
+
+@keyframes kraken-agrippe {
+  from { opacity: 0; }
+  to { opacity: 0.92; }
+}
+
+/* Le contenu passe devant : les tentacules habillent les marges sans gêner
+   la lecture des panneaux. */
+.appli {
+  position: relative;
+  z-index: 1;
 }
 
 /* --- La bête surgit et engloutit l'écran --- */

@@ -61,6 +61,48 @@ const TENTACULES = [
 const BASE_Y = 656
 const DUREE = 2400
 
+// Deux tentacules par coin, soit huit au total, qui restent agrippées à l'écran
+// tant que le Kraken est déclaré : un rappel permanent qu'un pli a été retiré.
+// Elles sont tracées dans un carré de 200, puis le même dessin est retourné par
+// CSS pour les quatre coins — d'où une seule géométrie à décrire.
+const GRIFFE = [
+  { x: -20, y: 30, angle: 15, longueur: 210, epaisseur: 30, courbure: 64 },
+  { x: 30, y: -20, angle: 75, longueur: 210, epaisseur: 30, courbure: -64 },
+].map((t) => traceTentacule(t))
+
+const COINS = ['hg', 'hd', 'bg', 'bd']
+
+export function EmpriseKraken() {
+  return (
+    <div className="kraken-emprise" aria-hidden="true">
+      {/* Dégradé déclaré une seule fois, partagé par les quatre coins. */}
+      <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
+        <defs>
+          <linearGradient id="emprise-chair" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#8a3626" />
+            <stop offset="65%" stopColor="#54201a" />
+            <stop offset="100%" stopColor="#2a100c" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      {COINS.map((coin) => (
+        <svg className={`kraken-griffe ${coin}`} viewBox="0 0 200 200" key={coin}>
+          {GRIFFE.map(({ d, ventouses }, i) => (
+            <g key={i}>
+              <path d={d} fill="url(#emprise-chair)" />
+              <path d={d} fill="none" stroke="#efc463" strokeOpacity="0.5" strokeWidth="1.4" />
+              {ventouses.map((v, j) => (
+                <circle key={j} cx={v.cx} cy={v.cy} r={v.r} fill="#efc463" fillOpacity="0.26" />
+              ))}
+            </g>
+          ))}
+        </svg>
+      ))}
+    </div>
+  )
+}
+
 // La feuille de style coupe toutes les animations en « mouvement réduit » :
 // la scène resterait figée à l'écran pendant deux secondes. On la saute donc
 // entièrement, le Kraken est simplement coché.

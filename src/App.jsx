@@ -24,7 +24,7 @@ import {
   TOTAL_MANCHES,
   totalPrimes,
 } from './scoring.js'
-import AnimationKraken from './Kraken.jsx'
+import AnimationKraken, { EmpriseKraken } from './Kraken.jsx'
 
 const CLE = 'skull-king-livre-de-bord'
 
@@ -405,11 +405,30 @@ function Manche({ partie, setPartie }) {
   return (
     <>
       {krakenEnScene && <AnimationKraken onFini={() => setKrakenEnScene(false)} />}
+      {/* Les tentacules s'installent une fois la bête passée, et restent
+          agrippées tant que le Kraken est déclaré sur la manche. */}
+      {kraken && !krakenEnScene && <EmpriseKraken />}
 
       <div className="bandeau">
         <div>
           <p className="eyebrow">{etape === 'plis' ? 'Décompte des plis' : 'Les paris'}</p>
-          <h2>Manche {manche}</h2>
+          <div className="titre-manche">
+            <h2>Manche {manche}</h2>
+            <button
+              type="button"
+              className={'puce-kraken' + (kraken ? ' actif' : '')}
+              onClick={basculerKraken}
+              aria-pressed={kraken}
+              aria-label={
+                kraken
+                  ? `Kraken déclaré : un pli englouti, ${attendus} à répartir. Toucher pour annuler.`
+                  : 'Déclarer le Kraken : il engloutit un pli de la manche.'
+              }
+            >
+              <Kraken size={17} />
+              Kraken
+            </button>
+          </div>
         </div>
         <div
           className="compteur-cartes"
@@ -427,38 +446,16 @@ function Manche({ partie, setPartie }) {
       </p>
 
       {etape === 'plis' && (
-        <>
-          <button
-            type="button"
-            className={'bascule-kraken' + (kraken ? ' actif' : '')}
-            onClick={basculerKraken}
-            aria-pressed={kraken}
-          >
-            <span className="marque-kraken">
-              <Kraken size={21} />
-            </span>
-            <span className="texte-kraken">
-              <b>Le Kraken</b>
-              <small>
-                {kraken
-                  ? 'Un pli englouti, il en reste ' + attendus + ' à répartir.'
-                  : 'À cocher si la carte a été jouée dans la manche.'}
-              </small>
-            </span>
-            <span className="voyant-kraken" />
-          </button>
-
-          <div
-            className={
-              'jauge' + (compteJuste ? ' juste' : plisPoses > attendus ? ' trop' : '')
-            }
-          >
-            <span>Plis attribués</span>
-            <span>
-              {plisPoses} / {attendus}
-            </span>
-          </div>
-        </>
+        <div
+          className={
+            'jauge' + (compteJuste ? ' juste' : plisPoses > attendus ? ' trop' : '')
+          }
+        >
+          <span>{kraken ? 'Plis attribués · Kraken' : 'Plis attribués'}</span>
+          <span>
+            {plisPoses} / {attendus}
+          </span>
+        </div>
       )}
 
       {joueurs.map((joueur) => {
