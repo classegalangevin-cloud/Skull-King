@@ -1,0 +1,24 @@
+# Dépendances
+node_modules/
+
+# Builds
+dist/
+dist-ssr/
+*.local
+
+# Clé de signature Android : NE JAMAIS publier
+*.jks
+*.keystore
+keystore.properties
+
+# Système / éditeurs
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log
+npm-debug.log*
+
+# APK generes
+*.apk

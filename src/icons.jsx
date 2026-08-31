@@ -92,6 +92,19 @@ export const Coffre = (p) => (
   </Svg>
 )
 
+// Tête bulbeuse, deux yeux, et les tentacules qui se déploient dessous.
+export const Kraken = (p) => (
+  <Svg {...p}>
+    <path d="M6.6 10.6a5.4 5.4 0 0 1 10.8 0c0 1.6-.5 2.7-1.3 3.5H7.9c-.8-.8-1.3-1.9-1.3-3.5Z" />
+    <circle cx="9.9" cy="10.4" r="1" />
+    <circle cx="14.1" cy="10.4" r="1" />
+    <path d="M8.4 14.1c-.6 1.7-1.6 2.8-3 3.4-1 .4-1.6 1.1-1.6 2" />
+    <path d="M10.7 14.1c-.3 2-.9 3.4-1.8 4.4-.7.7-.9 1.4-.7 2.1" />
+    <path d="M13.3 14.1c.3 2 .9 3.4 1.8 4.4.7.7.9 1.4.7 2.1" />
+    <path d="M15.6 14.1c.6 1.7 1.6 2.8 3 3.4 1 .4 1.6 1.1 1.6 2" />
+  </Svg>
+)
+
 export const Roue = (p) => (
   <Svg {...p}>
     <circle cx="12" cy="12" r="8" />

@@ -732,3 +732,174 @@ button.etat.scelle {
   border-bottom: 1px dotted rgba(192, 138, 46, 0.6);
   padding-bottom: 2px;
 }
+
+/* ---------- Le Kraken ---------- */
+
+.bascule-kraken {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  font-family: var(--corps);
+  color: var(--os-terne);
+  padding: 11px 13px;
+  margin-bottom: 12px;
+  border: var(--bord);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: border-color 0.25s, color 0.25s, background 0.25s;
+}
+
+.bascule-kraken .marque-kraken {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid rgba(192, 138, 46, 0.3);
+  background: rgba(0, 0, 0, 0.35);
+  transition: transform 0.3s, border-color 0.25s, background 0.25s;
+}
+
+.bascule-kraken .texte-kraken {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.bascule-kraken .texte-kraken b {
+  font-family: var(--titre);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bascule-kraken .texte-kraken small {
+  font-size: 14px;
+  color: rgba(237, 224, 196, 0.45);
+}
+
+.bascule-kraken .voyant-kraken {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  border-radius: 3px;
+  border: 1px solid rgba(192, 138, 46, 0.5);
+  transition: background 0.25s, box-shadow 0.25s;
+}
+
+.bascule-kraken.actif {
+  color: var(--or-vif);
+  border: var(--bord-vif);
+  background: rgba(74, 28, 24, 0.4);
+}
+
+.bascule-kraken.actif .marque-kraken {
+  transform: rotate(-8deg) scale(1.06);
+  border-color: rgba(239, 196, 99, 0.65);
+  background: rgba(74, 28, 24, 0.55);
+}
+
+.bascule-kraken.actif .texte-kraken small {
+  color: rgba(239, 196, 99, 0.75);
+}
+
+.bascule-kraken.actif .voyant-kraken {
+  background: var(--or-vif);
+  box-shadow: 0 0 10px rgba(239, 196, 99, 0.6);
+}
+
+/* --- La bête surgit et engloutit l'écran --- */
+
+.kraken-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(
+    130% 85% at 50% 100%,
+    rgba(58, 20, 14, 0.96),
+    rgba(11, 9, 8, 0.94) 55%,
+    rgba(11, 9, 8, 0.78)
+  );
+  animation: kraken-voile 2400ms ease-in-out forwards;
+}
+
+.kraken-dessin {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.kraken-corps {
+  transform-box: view-box;
+  transform-origin: 200px 640px;
+  animation: kraken-surgit 2400ms cubic-bezier(0.3, 0, 0.2, 1) forwards;
+}
+
+.kraken-bras {
+  transform-box: view-box;
+  animation: kraken-deploie 1150ms cubic-bezier(0.22, 1.1, 0.36, 1) backwards;
+}
+
+.kraken-yeux {
+  animation: kraken-regard 1500ms ease-out 700ms backwards;
+}
+
+.kraken-cri {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 30%;
+  margin: 0;
+  text-align: center;
+  font-family: var(--display);
+  font-size: clamp(44px, 15vw, 78px);
+  letter-spacing: 0.04em;
+  color: var(--or-vif);
+  text-shadow: 0 0 26px rgba(239, 196, 99, 0.55), 0 4px 18px rgba(0, 0, 0, 0.8);
+  animation: kraken-cri 2400ms ease-out 480ms backwards;
+}
+
+@keyframes kraken-voile {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  84% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Montée depuis les profondeurs, temps d'arrêt, puis la masse avale le cadre. */
+@keyframes kraken-surgit {
+  0% { transform: translateY(24%) scale(0.9); }
+  46% { transform: translateY(0) scale(1); }
+  64% { transform: translateY(0) scale(1.04); }
+  100% { transform: translateY(-8%) scale(3); }
+}
+
+@keyframes kraken-deploie {
+  0% { transform: scale(0.05); }
+  62% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+@keyframes kraken-regard {
+  0% { opacity: 0; }
+  35% { opacity: 1; }
+  55% { opacity: 0.55; }
+  75% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes kraken-cri {
+  0% { opacity: 0; transform: scale(0.82); }
+  18% { opacity: 1; transform: scale(1); }
+  62% { opacity: 1; transform: scale(1.04); }
+  100% { opacity: 0; transform: scale(1.5); }
+}

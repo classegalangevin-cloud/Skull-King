@@ -7,6 +7,7 @@ import {
   Croix,
   Drapeau,
   Fleche,
+  Kraken,
   Moins,
   Piece,
   Plume,
@@ -15,7 +16,15 @@ import {
   Sabres,
   SkullKing,
 } from './icons.jsx'
-import { classement, PRIMES, scoreManche, TOTAL_MANCHES, totalPrimes } from './scoring.js'
+import {
+  classement,
+  plisAttendus,
+  PRIMES,
+  scoreManche,
+  TOTAL_MANCHES,
+  totalPrimes,
+} from './scoring.js'
+import AnimationKraken from './Kraken.jsx'
 
 const CLE = 'skull-king-livre-de-bord'
 
@@ -252,10 +261,13 @@ function Primes({ primes, onChanger, actives }) {
 function Manche({ partie, setPartie }) {
   const { joueurs, manche, etape, manches } = partie
   const lignes = manches[manche] || {}
+  const krakens = partie.krakens || {}
+  const kraken = Boolean(krakens[manche])
   const donneur = joueurs[(manche - 1) % joueurs.length]
   // Pari ouvert à la saisie : un seul à la fois, refermé aussitôt choisi,
   // pour que le voisin ne lise pas le jeton sélectionné.
   const [pariOuvert, setPariOuvert] = useState(null)
+  const [krakenEnScene, setKrakenEnScene] = useState(false)
 
   const majLigne = (idJoueur, champs) =>
     setPartie({
@@ -272,7 +284,30 @@ function Manche({ partie, setPartie }) {
   const tousParisPris = joueurs.every((j) => lignes[j.id] && lignes[j.id].pari != null)
   const plisPoses = joueurs.reduce((s, j) => s + ((lignes[j.id] && lignes[j.id].plis) || 0), 0)
   const plisComplets = joueurs.every((j) => lignes[j.id] && lignes[j.id].plis != null)
-  const compteJuste = plisComplets && plisPoses === manche
+  const attendus = plisAttendus(manche, kraken)
+  const compteJuste = plisComplets && plisPoses === attendus
+
+  // Déclarer le Kraken retire un pli à répartir : les décomptes déjà saisis qui
+  // dépassent le nouveau maximum sont ramenés dessus, sans quoi ils resteraient
+  // sur un jeton qui n'existe plus.
+  const basculerKraken = () => {
+    const actif = !kraken
+    const plafond = plisAttendus(manche, actif)
+    const corrigees = {}
+    joueurs.forEach((j) => {
+      const ligne = lignes[j.id]
+      if (!ligne) return
+      corrigees[j.id] =
+        ligne.plis != null && ligne.plis > plafond ? { ...ligne, plis: plafond } : ligne
+    })
+
+    setPartie({
+      ...partie,
+      krakens: { ...krakens, [manche]: actif },
+      manches: { ...manches, [manche]: { ...lignes, ...corrigees } },
+    })
+    if (actif) setKrakenEnScene(true)
+  }
 
   const valider = () => {
     if (manche === TOTAL_MANCHES) setPartie({ ...partie, etape: 'fin' })
@@ -369,6 +404,8 @@ function Manche({ partie, setPartie }) {
   /* --- Paris et plis --- */
   return (
     <>
+      {krakenEnScene && <AnimationKraken onFini={() => setKrakenEnScene(false)} />}
+
       <div className="bandeau">
         <div>
           <p className="eyebrow">{etape === 'plis' ? 'Décompte des plis' : 'Les paris'}</p>
@@ -390,16 +427,38 @@ function Manche({ partie, setPartie }) {
       </p>
 
       {etape === 'plis' && (
-        <div
-          className={
-            'jauge' + (compteJuste ? ' juste' : plisPoses > manche ? ' trop' : '')
-          }
-        >
-          <span>Plis attribués</span>
-          <span>
-            {plisPoses} / {manche}
-          </span>
-        </div>
+        <>
+          <button
+            type="button"
+            className={'bascule-kraken' + (kraken ? ' actif' : '')}
+            onClick={basculerKraken}
+            aria-pressed={kraken}
+          >
+            <span className="marque-kraken">
+              <Kraken size={21} />
+            </span>
+            <span className="texte-kraken">
+              <b>Le Kraken</b>
+              <small>
+                {kraken
+                  ? 'Un pli englouti, il en reste ' + attendus + ' à répartir.'
+                  : 'À cocher si la carte a été jouée dans la manche.'}
+              </small>
+            </span>
+            <span className="voyant-kraken" />
+          </button>
+
+          <div
+            className={
+              'jauge' + (compteJuste ? ' juste' : plisPoses > attendus ? ' trop' : '')
+            }
+          >
+            <span>Plis attribués</span>
+            <span>
+              {plisPoses} / {attendus}
+            </span>
+          </div>
+        </>
       )}
 
       {joueurs.map((joueur) => {
@@ -458,7 +517,7 @@ function Manche({ partie, setPartie }) {
             {etape === 'plis' && (
               <>
                 <Jetons
-                  max={manche}
+                  max={attendus}
                   valeur={ligne.plis}
                   onChoisir={(n) => majLigne(joueur.id, { plis: n })}
                 />
@@ -519,7 +578,7 @@ function Manche({ partie, setPartie }) {
                   <Coche size={17} /> Inscrire la manche
                 </>
               ) : (
-                `${plisPoses} pli${plisPoses > 1 ? 's' : ''} sur ${manche} attribué${
+                `${plisPoses} pli${plisPoses > 1 ? 's' : ''} sur ${attendus} attribué${
                   plisPoses > 1 ? 's' : ''
                 }`
               )}
@@ -706,7 +765,7 @@ export default function App() {
   }, [enPartie])
 
   const demarrer = (joueurs) => {
-    setPartie({ joueurs, manche: 1, etape: 'paris', manches: {} })
+    setPartie({ joueurs, manche: 1, etape: 'paris', manches: {}, krakens: {} })
     setVue('manche')
   }
 
