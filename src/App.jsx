@@ -2,13 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   AVATARS,
   avatarParId,
+  Baleine,
   Coche,
   Crane,
   Croix,
   Drapeau,
   Fleche,
+  Haut_parleur,
   Kraken,
   Moins,
+  Muet,
   Piece,
   Plume,
   Plus,
@@ -25,6 +28,14 @@ import {
   totalPrimes,
 } from './scoring.js'
 import AnimationKraken, { EmpriseKraken } from './Kraken.jsx'
+import AnimationBaleine, { SillageBaleine } from './Baleine.jsx'
+import {
+  estSilencieux,
+  jouerSon,
+  reglerSilence,
+  SONS_ACTIFS,
+  taireTout,
+} from '@sons'
 
 const CLE = 'skull-king-livre-de-bord'
 
@@ -161,6 +172,23 @@ function Equipage({ onDemarrer, equipagePrecedent }) {
 /* Sélecteur de jetons 0 … n                                           */
 /* ------------------------------------------------------------------ */
 
+// Coupe-son. Absent de la version web, qui n'embarque aucun bruitage.
+function BoutonSon({ silence, onBasculer }) {
+  if (!SONS_ACTIFS) return null
+  return (
+    <button
+      type="button"
+      className={'puce-son' + (silence ? ' coupe' : '')}
+      onClick={onBasculer}
+      aria-pressed={silence}
+      aria-label={silence ? 'Rétablir les bruitages' : 'Couper les bruitages'}
+      title={silence ? 'Rétablir les bruitages' : 'Couper les bruitages'}
+    >
+      {silence ? <Muet size={17} /> : <Haut_parleur size={17} />}
+    </button>
+  )
+}
+
 function Jetons({ max, valeur, onChoisir }) {
   return (
     <div className="jetons">
@@ -262,12 +290,15 @@ function Manche({ partie, setPartie }) {
   const { joueurs, manche, etape, manches } = partie
   const lignes = manches[manche] || {}
   const krakens = partie.krakens || {}
+  const baleines = partie.baleines || {}
   const kraken = Boolean(krakens[manche])
+  const baleine = Boolean(baleines[manche])
   const donneur = joueurs[(manche - 1) % joueurs.length]
   // Pari ouvert à la saisie : un seul à la fois, refermé aussitôt choisi,
   // pour que le voisin ne lise pas le jeton sélectionné.
   const [pariOuvert, setPariOuvert] = useState(null)
   const [krakenEnScene, setKrakenEnScene] = useState(false)
+  const [baleineEnScene, setBaleineEnScene] = useState(false)
 
   const majLigne = (idJoueur, champs) =>
     setPartie({
@@ -284,15 +315,14 @@ function Manche({ partie, setPartie }) {
   const tousParisPris = joueurs.every((j) => lignes[j.id] && lignes[j.id].pari != null)
   const plisPoses = joueurs.reduce((s, j) => s + ((lignes[j.id] && lignes[j.id].plis) || 0), 0)
   const plisComplets = joueurs.every((j) => lignes[j.id] && lignes[j.id].plis != null)
-  const attendus = plisAttendus(manche, kraken)
+  const attendus = plisAttendus(manche, kraken, baleine)
   const compteJuste = plisComplets && plisPoses === attendus
 
-  // Déclarer le Kraken retire un pli à répartir : les décomptes déjà saisis qui
-  // dépassent le nouveau maximum sont ramenés dessus, sans quoi ils resteraient
-  // sur un jeton qui n'existe plus.
-  const basculerKraken = () => {
-    const actif = !kraken
-    const plafond = plisAttendus(manche, actif)
+  // Déclarer un incident retire un pli à répartir : les décomptes déjà saisis
+  // qui dépassent le nouveau maximum sont ramenés dessus, sans quoi ils
+  // resteraient sur un jeton qui n'existe plus.
+  const declarer = (prochainKraken, prochaineBaleine) => {
+    const plafond = plisAttendus(manche, prochainKraken, prochaineBaleine)
     const corrigees = {}
     joueurs.forEach((j) => {
       const ligne = lignes[j.id]
@@ -303,15 +333,38 @@ function Manche({ partie, setPartie }) {
 
     setPartie({
       ...partie,
-      krakens: { ...krakens, [manche]: actif },
+      krakens: { ...krakens, [manche]: prochainKraken },
+      baleines: { ...baleines, [manche]: prochaineBaleine },
       manches: { ...manches, [manche]: { ...lignes, ...corrigees } },
     })
-    if (actif) setKrakenEnScene(true)
+  }
+
+  const basculerKraken = () => {
+    const actif = !kraken
+    declarer(actif, baleine)
+    if (actif) {
+      jouerSon('kraken')
+      setKrakenEnScene(true)
+    }
+  }
+
+  const basculerBaleine = () => {
+    const actif = !baleine
+    declarer(kraken, actif)
+    if (actif) {
+      jouerSon('baleine')
+      setBaleineEnScene(true)
+    }
   }
 
   const valider = () => {
-    if (manche === TOTAL_MANCHES) setPartie({ ...partie, etape: 'fin' })
-    else setPartie({ ...partie, etape: 'bilan' })
+    if (manche === TOTAL_MANCHES) {
+      jouerSon('podium')
+      setPartie({ ...partie, etape: 'fin' })
+    } else {
+      jouerSon('manche')
+      setPartie({ ...partie, etape: 'bilan' })
+    }
   }
 
   const mancheSuivante = () =>
@@ -405,15 +458,20 @@ function Manche({ partie, setPartie }) {
   return (
     <>
       {krakenEnScene && <AnimationKraken onFini={() => setKrakenEnScene(false)} />}
+      {baleineEnScene && <AnimationBaleine onFini={() => setBaleineEnScene(false)} />}
       {/* Les tentacules s'installent une fois la bête passée, et restent
           agrippées tant que le Kraken est déclaré sur la manche. */}
       {kraken && !krakenEnScene && <EmpriseKraken />}
+      {baleine && !baleineEnScene && <SillageBaleine />}
 
       <div className="bandeau">
         <div>
           <p className="eyebrow">{etape === 'plis' ? 'Décompte des plis' : 'Les paris'}</p>
-          <div className="titre-manche">
-            <h2>Manche {manche}</h2>
+          <h2>Manche {manche}</h2>
+          {/* Les deux incidents qui annulent un pli, côte à côte sur leur
+              propre rangée : à trois éléments, le titre les repousserait à la
+              ligne de façon désordonnée dès que le numéro de manche s'allonge. */}
+          <div className="incidents">
             <button
               type="button"
               className={'puce-kraken' + (kraken ? ' actif' : '')}
@@ -427,6 +485,21 @@ function Manche({ partie, setPartie }) {
             >
               <Kraken size={17} />
               Kraken
+            </button>
+
+            <button
+              type="button"
+              className={'puce-kraken puce-baleine' + (baleine ? ' actif' : '')}
+              onClick={basculerBaleine}
+              aria-pressed={baleine}
+              aria-label={
+                baleine
+                  ? `Baleine et fuites déclarées : un pli annulé, ${attendus} à répartir. Toucher pour annuler.`
+                  : 'Déclarer un pli Baleine avec fuites : il ne revient à personne.'
+              }
+            >
+              <Baleine size={17} />
+              Baleine / Fuites
             </button>
           </div>
         </div>
@@ -451,7 +524,11 @@ function Manche({ partie, setPartie }) {
             'jauge' + (compteJuste ? ' juste' : plisPoses > attendus ? ' trop' : '')
           }
         >
-          <span>{kraken ? 'Plis attribués · Kraken' : 'Plis attribués'}</span>
+          <span>
+            {['Plis attribués', kraken && 'Kraken', baleine && 'Baleine']
+              .filter(Boolean)
+              .join(' · ')}
+          </span>
           <span>
             {plisPoses} / {attendus}
           </span>
@@ -544,7 +621,10 @@ function Manche({ partie, setPartie }) {
           {etape === 'paris' && (
             <button
               className="bouton or"
-              onClick={() => setPartie({ ...partie, etape: 'reveal' })}
+              onClick={() => {
+                jouerSon('yohoho')
+                setPartie({ ...partie, etape: 'reveal' })
+              }}
               disabled={!tousParisPris}
             >
               <span className="yoho">Yo-ho-ho&nbsp;!</span>
@@ -720,6 +800,16 @@ function Fin({ partie, onRejouer, onNouvelle }) {
 export default function App() {
   const [partie, setPartie] = useState(chargerPartie)
   const [vue, setVue] = useState('manche')
+  // Le réglage vit dans le module audio et dans le stockage local ; cette copie
+  // ne sert qu'à redessiner le bouton.
+  const [silence, setSilence] = useState(estSilencieux)
+
+  const basculerSon = () => {
+    const coupe = !silence
+    reglerSilence(coupe)
+    if (coupe) taireTout()
+    setSilence(coupe)
+  }
 
   useEffect(() => {
     try {
@@ -762,7 +852,14 @@ export default function App() {
   }, [enPartie])
 
   const demarrer = (joueurs) => {
-    setPartie({ joueurs, manche: 1, etape: 'paris', manches: {}, krakens: {} })
+    setPartie({
+      joueurs,
+      manche: 1,
+      etape: 'paris',
+      manches: {},
+      krakens: {},
+      baleines: {},
+    })
     setVue('manche')
   }
 
@@ -785,6 +882,11 @@ export default function App() {
   if (partie.etape === 'fin') {
     return (
       <div className="appli">
+        {/* Le podium sort de la barre d'onglets : le coupe-son y est reposé
+            pour rester accessible pendant la fanfare. */}
+        <div className="coin-son">
+          <BoutonSon silence={silence} onBasculer={basculerSon} />
+        </div>
         <Fin partie={partie} onRejouer={rejouer} onNouvelle={nouvelle} />
       </div>
     )
@@ -805,6 +907,7 @@ export default function App() {
         >
           Le tableau
         </button>
+        <BoutonSon silence={silence} onBasculer={basculerSon} />
       </div>
 
       {vue === 'manche' ? (

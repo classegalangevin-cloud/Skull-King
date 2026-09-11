@@ -457,6 +457,13 @@ h2 {
   margin-bottom: 12px;
 }
 
+/* Le libellé peut passer à la ligne quand les deux incidents sont déclarés ;
+   le compte, lui, ne doit jamais se couper entre le chiffre et son total. */
+.jauge > span:last-child {
+  white-space: nowrap;
+  padding-left: 10px;
+}
+
 .jauge.juste {
   color: var(--or-vif);
   border: var(--bord-vif);
@@ -737,11 +744,12 @@ button.etat.scelle {
 
 /* --- La pastille, posée dans l'en-tête à côté du numéro de manche --- */
 
-.titre-manche {
+.incidents {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px 10px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .puce-kraken {
@@ -763,6 +771,62 @@ button.etat.scelle {
 
 .puce-kraken svg {
   flex: none;
+}
+
+/* Deux pastilles côte à côte sous le titre : on resserre pour qu'elles tiennent
+   ensemble sur une même ligne, même sur un écran étroit. */
+.puce-baleine {
+  letter-spacing: 0.1em;
+}
+
+.incidents .puce-kraken {
+  padding: 5px 9px 5px 7px;
+  gap: 5px;
+}
+
+/* Sélecteur plus précis que `.puce-kraken.actif`, écrit plus bas : sans cela
+   la Baleine hériterait de l'or du Kraken au lieu de son bleu. */
+.incidents .puce-baleine.actif {
+  color: #bcdcee;
+  border-color: rgba(160, 214, 240, 0.6);
+  background: rgba(24, 54, 72, 0.6);
+  box-shadow: 0 0 12px rgba(160, 214, 240, 0.22);
+}
+
+/* Dans la barre d'onglets, le coupe-son garde sa largeur : seuls les deux
+   onglets se partagent la place restante. */
+.onglets .puce-son {
+  flex: none;
+  width: 38px;
+  height: auto;
+  align-self: stretch;
+  border-radius: 3px;
+}
+
+.coin-son {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.puce-son {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: var(--bord);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--or-vif);
+  cursor: pointer;
+  transition: color 0.25s, border-color 0.25s, background 0.25s;
+}
+
+.puce-son.coupe {
+  color: rgba(237, 224, 196, 0.4);
+  border-color: rgba(192, 138, 46, 0.22);
 }
 
 .puce-kraken.actif {
@@ -899,4 +963,137 @@ button.etat.scelle {
   18% { opacity: 1; transform: scale(1); }
   62% { opacity: 1; transform: scale(1.04); }
   100% { opacity: 0; transform: scale(1.5); }
+}
+
+/* ---------- La Baleine ---------- */
+
+/* Même facture que la scène du Kraken, mais en bleus froids : les deux
+   incidents doivent se distinguer d'un coup d'œil. */
+
+.baleine-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(
+    130% 90% at 50% 50%,
+    rgba(19, 46, 62, 0.94),
+    rgba(9, 20, 28, 0.95) 55%,
+    rgba(8, 14, 19, 0.8)
+  );
+  animation: baleine-voile 2400ms ease-in-out forwards;
+}
+
+.baleine-dessin {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* La traversée : entrée par la droite, sortie par la gauche. */
+.baleine-corps {
+  transform-box: view-box;
+  animation: baleine-traverse 2400ms cubic-bezier(0.34, 0, 0.5, 1) forwards;
+}
+
+.baleine-jet {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: baleine-jet 1100ms ease-out backwards;
+}
+
+.baleine-goutte {
+  animation: baleine-goutte 1000ms ease-out backwards;
+}
+
+.baleine-cri {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 28%;
+  margin: 0;
+  text-align: center;
+  font-family: var(--display);
+  font-size: clamp(40px, 13.5vw, 72px);
+  letter-spacing: 0.04em;
+  color: var(--or-vif);
+  text-shadow: 0 0 26px rgba(160, 214, 240, 0.5), 0 4px 18px rgba(0, 0, 0, 0.85);
+  animation: baleine-cri 2400ms ease-out 520ms backwards;
+}
+
+@keyframes baleine-voile {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  84% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Elle plonge légèrement en passant, plutôt que de filer à plat. */
+@keyframes baleine-traverse {
+  0% { transform: translate(420px, 40px) rotate(-6deg); }
+  45% { transform: translate(60px, 0) rotate(-2deg); }
+  70% { transform: translate(-130px, 14px) rotate(2deg); }
+  100% { transform: translate(-430px, 60px) rotate(7deg); }
+}
+
+@keyframes baleine-jet {
+  0% { opacity: 0; transform: scaleY(0.1) scaleX(0.6); }
+  35% { opacity: 1; transform: scaleY(1.05) scaleX(1); }
+  70% { opacity: 0.9; transform: scaleY(1) scaleX(1.05); }
+  100% { opacity: 0; transform: scaleY(1.05) scaleX(1.15); }
+}
+
+@keyframes baleine-goutte {
+  0% { opacity: 0; transform: translateY(26px) scale(0.3); }
+  40% { opacity: 0.9; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-18px) scale(0.7); }
+}
+
+@keyframes baleine-cri {
+  0% { opacity: 0; transform: scale(0.86); }
+  18% { opacity: 1; transform: scale(1); }
+  66% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 0; transform: scale(1.28); }
+}
+
+/* --- Le sillage : bulles persistantes tant que la Baleine est déclarée --- */
+
+/* Même z-index négatif que les tentacules du Kraken : un élément positionné à
+   0 passerait devant les panneaux, qui ne sont pas positionnés. */
+.baleine-sillage {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* L'opacité de repos est celle qu'on veut voir : en « mouvement réduit », la
+   règle globale coupe l'animation, et des bulles restées à 0 seraient
+   invisibles. Elles s'immobilisent alors, réparties sur toute la hauteur. */
+.bulle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.5;
+  background: radial-gradient(
+    circle at 32% 28%,
+    rgba(255, 255, 255, 0.75),
+    rgba(188, 220, 238, 0.26) 45%,
+    rgba(188, 220, 238, 0.05) 72%
+  );
+  border: 1px solid rgba(188, 220, 238, 0.42);
+  animation-name: bulle-monte;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* Montée lente avec une légère dérive latérale, pour que le filet ondule. */
+@keyframes bulle-monte {
+  0% { transform: translate(0, 0) scale(0.88); opacity: 0; }
+  9% { opacity: 0.55; }
+  50% { transform: translate(9px, -48vh) scale(1); opacity: 0.5; }
+  91% { opacity: 0.4; }
+  100% { transform: translate(-6px, -96vh) scale(1.1); opacity: 0; }
 }

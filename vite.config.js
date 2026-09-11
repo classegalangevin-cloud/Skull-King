@@ -1,3 +1,4 @@
+import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -39,6 +40,16 @@ const pwa = VitePWA({
   },
 })
 
+const chemin = (relatif) => fileURLToPath(new URL(relatif, import.meta.url))
+
 export default defineConfig({
   plugins: [react(), ...(pourAndroid ? [] : [pwa])],
+  resolve: {
+    alias: {
+      // Les bruitages n'existent que dans l'appli Android. Le site reçoit un
+      // module vide de même signature, si bien que les MP3 ne sont pas
+      // empaquetés du tout côté web.
+      '@sons': pourAndroid ? chemin('./src/sons.js') : chemin('./src/sons-muet.js'),
+    },
+  },
 })

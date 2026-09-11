@@ -92,6 +92,29 @@ export const Coffre = (p) => (
   </Svg>
 )
 
+// Baleine de profil, souffle jaillissant de l'évent.
+export const Baleine = (p) => (
+  <Svg {...p}>
+    <path d="M2.6 13.4c1-2.6 4.2-4.2 7.6-4.2 3 0 5.6 1.2 7.2 3l3-2.4c.5-.4 1.1 0 1 .6l-.7 2.9.8 2.9c.2.6-.4 1-.9.6l-3.2-2.4c-1.6 1.8-4.2 3-7.2 3-3.4 0-6.6-1.5-7.6-4Z" />
+    <path d="M9.8 8.8c-.4-1.6.2-3 1.6-3.9M12.6 8.9c.5-1.9 1.9-3.2 3.8-3.6" />
+    <circle cx="6.6" cy="12.5" r=".9" />
+  </Svg>
+)
+
+export const Haut_parleur = (p) => (
+  <Svg {...p}>
+    <path d="M4 9.4h3.2L12 5.6v12.8L7.2 14.6H4a1 1 0 0 1-1-1v-3.2a1 1 0 0 1 1-1Z" />
+    <path d="M15.4 9.6a3.4 3.4 0 0 1 0 4.8M17.9 7.1a6.9 6.9 0 0 1 0 9.8" />
+  </Svg>
+)
+
+export const Muet = (p) => (
+  <Svg {...p}>
+    <path d="M4 9.4h3.2L12 5.6v12.8L7.2 14.6H4a1 1 0 0 1-1-1v-3.2a1 1 0 0 1 1-1Z" />
+    <path d="M16.2 10.2l4.4 4.4M20.6 10.2l-4.4 4.4" />
+  </Svg>
+)
+
 // Tête bulbeuse, deux yeux, et les tentacules qui se déploient dessous.
 export const Kraken = (p) => (
   <Svg {...p}>

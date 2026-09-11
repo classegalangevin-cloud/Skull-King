@@ -8,10 +8,17 @@
 
 export const TOTAL_MANCHES = 10
 
-// La carte Kraken annule le pli où elle est jouée : personne ne le remporte.
-// La manche compte alors un pli de moins que de cartes distribuées. Le jeu ne
-// contient qu'un seul Kraken, d'où un pli annulé au maximum par manche.
-export const plisAttendus = (manche, kraken) => manche - (kraken ? 1 : 0)
+// Deux situations annulent un pli : personne ne le remporte.
+//
+//  - le Kraken, qui engloutit le pli où il est joué ;
+//  - la Baleine accompagnée de fuites, un pli sans aucune carte à numéro.
+//
+// Le jeu ne contient qu'un Kraken et qu'une Baleine, mais ils peuvent sortir
+// dans deux plis différents d'une même manche : chacun compte alors pour un
+// pli en moins. Le total est borné à zéro, faute de quoi une manche courte
+// (une seule carte, deux incidents déclarés) descendrait en négatif.
+export const plisAttendus = (manche, kraken, baleine) =>
+  Math.max(0, manche - (kraken ? 1 : 0) - (baleine ? 1 : 0))
 
 export const PRIMES = [
   { id: 'q14jaune', label: '14 Jaune', points: 10, max: 1, teinte: 'jaune' },

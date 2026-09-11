@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 
+import { mouvementReduit } from './mouvement.js'
+
 // Animation jouée quand le Kraken est déclaré : la bête monte des profondeurs,
 // referme ses tentacules et engloutit l'écran avant de se dissoudre.
 //
@@ -102,14 +104,6 @@ export function EmpriseKraken() {
     </div>
   )
 }
-
-// La feuille de style coupe toutes les animations en « mouvement réduit » :
-// la scène resterait figée à l'écran pendant deux secondes. On la saute donc
-// entièrement, le Kraken est simplement coché.
-const mouvementReduit = () =>
-  typeof window !== 'undefined' &&
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 export default function AnimationKraken({ onFini }) {
   const sansAnimation = mouvementReduit()
