@@ -181,7 +181,7 @@ export default function AnimationBaleine({ onFini }) {
               agrandi : il déborde du cadre en hauteur, et il faut toute la
               traversée pour le voir passer en entier. Il est posé bas dans le
               cadre pour dégager le souffle, qui partirait sinon hors champ. */}
-          <g transform="translate(0 430) scale(1.5)">
+          <g transform="translate(0 430) scale(1.2)">
             {/* --- Le souffle, à l'avant gauche du crâne --- */}
             <g className="baleine-event" transform="translate(46 -186)">
               {JETS.map((jet, i) => (
