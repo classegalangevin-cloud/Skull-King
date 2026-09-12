@@ -177,11 +177,12 @@ export default function AnimationBaleine({ onFini }) {
         </defs>
 
         <g className="baleine-corps">
-          {/* Le cachalot est tracé sur ~1500 unités de long pour 460 de haut, puis
-              agrandi : il déborde du cadre en hauteur, et il faut toute la
-              traversée pour le voir passer en entier. Il est posé bas dans le
-              cadre pour dégager le souffle, qui partirait sinon hors champ. */}
-          <g transform="translate(0 430) scale(1.2)">
+          {/* Le cachalot est tracé sur ~1500 unités de long pour 460 de haut.
+              À cette échelle il tient tout juste en hauteur — dos, ventre et
+              caudale visibles — mais reste long de plusieurs largeurs d'écran :
+              il faut toute la traversée pour le voir passer en entier. Sa
+              position verticale ménage la place du souffle au-dessus. */}
+          <g transform="translate(0 371) scale(1.02)">
             {/* --- Le souffle, à l'avant gauche du crâne --- */}
             <g className="baleine-event" transform="translate(46 -186)">
               {JETS.map((jet, i) => (

@@ -1057,9 +1057,9 @@ button.etat.scelle {
 
 /* Elle plonge légèrement en passant, plutôt que de filer à plat. */
 @keyframes baleine-traverse {
-  0% { transform: translate(430px, 26px) rotate(-1.2deg); }
-  50% { transform: translate(-650px, -10px) rotate(0.4deg); }
-  100% { transform: translate(-1730px, 30px) rotate(1.4deg); }
+  0% { transform: translate(430px, 12px); }
+  50% { transform: translate(-520px, -8px); }
+  100% { transform: translate(-1470px, 14px); }
 }
 
 @keyframes baleine-jet {
