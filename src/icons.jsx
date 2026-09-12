@@ -92,6 +92,17 @@ export const Coffre = (p) => (
   </Svg>
 )
 
+// Main ouverte : le vote « chevrotine » du mode Rascal, par opposition au
+// poing fermé du boulet de canon.
+export const Main = (p) => (
+  <Svg {...p}>
+    <path d="M8.4 11.2V5.6a1.3 1.3 0 0 1 2.6 0v5" />
+    <path d="M11 10.2V4.4a1.3 1.3 0 0 1 2.6 0v5.8" />
+    <path d="M13.6 10.6V5.8a1.3 1.3 0 0 1 2.6 0v6.4" />
+    <path d="M16.2 12.2v-2a1.3 1.3 0 0 1 2.6 0v4.4a5.4 5.4 0 0 1-5.4 5.4h-1.2a5 5 0 0 1-3.9-1.9l-2.9-3.7a1.3 1.3 0 0 1 1.9-1.7l2.1 1.9" />
+  </Svg>
+)
+
 // Baleine de profil, souffle jaillissant de l'évent.
 export const Baleine = (p) => (
   <Svg {...p}>

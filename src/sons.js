@@ -6,12 +6,15 @@
 import baleine from './sons/baleine.mp3'
 import kraken from './sons/kraken.mp3'
 import manche from './sons/manche.mp3'
+import pirate from './sons/pirate.mp3'
 import podium from './sons/podium.mp3'
+import sirene from './sons/sirene.mp3'
+import skullking from './sons/skullking.mp3'
 import yohoho from './sons/yohoho.mp3'
 
 export const SONS_ACTIFS = true
 
-const FICHIERS = { baleine, kraken, manche, podium, yohoho }
+const FICHIERS = { baleine, kraken, manche, pirate, podium, sirene, skullking, yohoho }
 
 const CLE_SILENCE = 'skull-king-silence'
 

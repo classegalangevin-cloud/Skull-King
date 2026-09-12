@@ -6,11 +6,17 @@ Compteur de points pour le jeu de cartes **Skull King**, en 10 manches, de 2 à 
 
 - Saisie des paris **masquée** puis révélation simultanée (« Yo-ho-ho ! »), comme à la table.
 - Contrôle automatique : le total des plis attribués doit égaler le nombre de cartes de la manche.
-- Primes optionnelles par joueur, comptées uniquement si le pari est tenu.
+- Primes optionnelles par joueur, acquises même si le pari est manqué (voir plus bas).
+- Deux incidents qui annulent un pli : le **Kraken** et la **Baleine sans pli**, chacun avec son
+  animation et son indicateur persistant.
+- Trois saynètes de capture (Skull King, sirène emprisonnée, sirène triomphante).
+- Deux systèmes de comptage au choix en début de partie : **Skull King** et **Rascal**.
 - Tableau des scores avec détail manche par manche, et podium final.
 - La partie en cours survit à un rafraîchissement de la page (stockage local du navigateur).
 
 ## Comptage appliqué
+
+### Skull King — le système classique
 
 | Situation | Points |
 |---|---|
@@ -19,9 +25,31 @@ Compteur de points pour le jeu de cartes **Skull King**, en 10 manches, de 2 à 
 | Pari à 0 tenu | +10 par carte de la manche |
 | Pari à 0 manqué | −10 par carte de la manche |
 
-Primes (seulement si le pari est tenu) : 14 jaune +10, 14 vert +10, 14 mauve (atout) +20,
-pirate capturé par le Skull King +30, Skull King capturé par une sirène +50,
-sirène capturée par un pirate +20.
+Primes : 14 jaune +10, 14 vert +10, 14 mauve +10, 14 noir (atout) +20, sirène capturée par un
+pirate +20, pirate capturé par le Skull King +30, Skull King capturé par une sirène +40.
+
+Les primes sont **acquises même si le pari est manqué**. Cette édition des règles ne les
+conditionne plus à la réussite du pari, contrairement aux précédentes — l'appli a suivi.
+
+### Rascal
+
+Chacun joue le même potentiel, quelle que soit sa mise : **10 points par carte distribuée**.
+Ce qu'il en touche dépend de sa précision, et les primes suivent le même barème.
+
+| Situation | Points de mise | Primes |
+|---|---|---|
+| Coup direct (mise exacte) | la totalité | entières |
+| Frappe à revers (écart de 1) | la moitié | à moitié |
+| Échec cuisant (écart ≥ 2) | rien | perdues |
+
+**Règle optionnelle — chevrotine ou boulet de canon.** Annoncée après la mise, révélée au
+« Yo-ho-ho ! ». La chevrotine suit le barème ci-dessus ; le boulet de canon rapporte 15 points
+par carte sur un coup direct, et rien du tout au moindre écart, primes comprises.
+
+### Pari Rascal
+
+Pouvoir de Rascal le Flambeur : pariez 0, 10 ou 20 points. Gagnez-les si votre mise est exacte,
+perdez-les sinon. C'est du quitte ou double, qui ne suit pas le barème progressif du mode Rascal.
 
 Toute la logique est isolée dans `src/scoring.js` si un barème doit être ajusté.
 

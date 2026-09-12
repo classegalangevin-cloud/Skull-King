@@ -63,21 +63,42 @@ const TENTACULES = [
 const BASE_Y = 656
 const DUREE = 2400
 
-// Deux tentacules par coin, soit huit au total, qui restent agrippées à l'écran
-// tant que le Kraken est déclaré : un rappel permanent qu'un pli a été retiré.
-// Elles sont tracées dans un carré de 200, puis le même dessin est retourné par
-// CSS pour les quatre coins — d'où une seule géométrie à décrire.
-const GRIFFE = [
+// Seize tentacules restent agrippées à l'écran tant que le Kraken est déclaré :
+// un rappel permanent qu'un pli a été retiré. Deux géométries suffisent, que le
+// CSS retourne et fait pivoter pour couvrir les huit bords du cadre.
+//
+//   COIN  quatre coins, deux tentacules chacun : l'une vient du bord latéral,
+//         l'autre du bord horizontal, et elles se croisent dans l'angle.
+//   BORD  milieu des quatre côtés, deux tentacules entrant de face.
+//
+// Les tentacules de bord passent au beau milieu des panneaux : elles sont plus
+// courtes et nettement plus discrètes que celles des coins, sans quoi seize
+// bras finiraient par rendre le texte illisible.
+const COIN = [
   { x: -20, y: 30, angle: 15, longueur: 210, epaisseur: 30, courbure: 64 },
   { x: 30, y: -20, angle: 75, longueur: 210, epaisseur: 30, courbure: -64 },
 ].map((t) => traceTentacule(t))
 
-const COINS = ['hg', 'hd', 'bg', 'bd']
+const BORD = [
+  { x: -24, y: 62, angle: -20, longueur: 168, epaisseur: 24, courbure: 54 },
+  { x: -24, y: 138, angle: 20, longueur: 168, epaisseur: 22, courbure: -54 },
+].map((t) => traceTentacule(t))
+
+const ANCRAGES = [
+  { classe: 'hg', trace: COIN },
+  { classe: 'hd', trace: COIN },
+  { classe: 'bg', trace: COIN },
+  { classe: 'bd', trace: COIN },
+  { classe: 'bord g', trace: BORD },
+  { classe: 'bord d', trace: BORD },
+  { classe: 'bord h', trace: BORD },
+  { classe: 'bord b', trace: BORD },
+]
 
 export function EmpriseKraken() {
   return (
     <div className="kraken-emprise" aria-hidden="true">
-      {/* Dégradé déclaré une seule fois, partagé par les quatre coins. */}
+      {/* Dégradé déclaré une seule fois, partagé par toutes les tentacules. */}
       <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
         <defs>
           <linearGradient id="emprise-chair" x1="0" y1="0" x2="1" y2="1">
@@ -88,9 +109,9 @@ export function EmpriseKraken() {
         </defs>
       </svg>
 
-      {COINS.map((coin) => (
-        <svg className={`kraken-griffe ${coin}`} viewBox="0 0 200 200" key={coin}>
-          {GRIFFE.map(({ d, ventouses }, i) => (
+      {ANCRAGES.map(({ classe, trace }) => (
+        <svg className={`kraken-griffe ${classe}`} viewBox="0 0 200 200" key={classe}>
+          {trace.map(({ d, ventouses }, i) => (
             <g key={i}>
               <path d={d} fill="url(#emprise-chair)" />
               <path d={d} fill="none" stroke="#efc463" strokeOpacity="0.5" strokeWidth="1.4" />

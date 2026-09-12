@@ -10,6 +10,7 @@ import {
   Fleche,
   Haut_parleur,
   Kraken,
+  Main,
   Moins,
   Muet,
   Piece,
@@ -20,15 +21,21 @@ import {
   SkullKing,
 } from './icons.jsx'
 import {
+  BOULET,
+  CHEVROTINE,
   classement,
+  PARIS_RASCAL,
   plisAttendus,
   PRIMES,
+  RASCAL,
   scoreManche,
+  SKULL_KING,
   TOTAL_MANCHES,
   totalPrimes,
 } from './scoring.js'
 import AnimationKraken, { EmpriseKraken } from './Kraken.jsx'
 import AnimationBaleine, { SillageBaleine } from './Baleine.jsx'
+import AnimationCapture from './Captures.jsx'
 import {
   estSilencieux,
   jouerSon,
@@ -48,7 +55,13 @@ const chargerPartie = () => {
   }
 }
 
-const ligneVide = () => ({ pari: null, plis: null, primes: {} })
+const ligneVide = () => ({
+  pari: null,
+  plis: null,
+  primes: {},
+  rascal: 0,
+  mise: CHEVROTINE,
+})
 
 const nouvelId = () => Math.random().toString(36).slice(2, 9)
 
@@ -84,11 +97,16 @@ function Equipage({ onDemarrer, equipagePrecedent }) {
     )
   }
 
+  const [mode, setMode] = useState(SKULL_KING)
+  const [optionRascal, setOptionRascal] = useState(false)
+
   const pret = joueurs.length >= 2
 
   const demarrer = () =>
     onDemarrer(
       joueurs.map((j, i) => ({ ...j, nom: j.nom.trim() || `Moussaillon ${i + 1}` })),
+      mode,
+      mode === RASCAL && optionRascal,
     )
 
   return (
@@ -150,11 +168,61 @@ function Equipage({ onDemarrer, equipagePrecedent }) {
       <div className="panneau">
         <p className="eyebrow">Le comptage appliqué</p>
         <hr className="filet" />
-        <p className="discret" style={{ margin: 0 }}>
-          Pari tenu : 20 points par pli annoncé. Pari à zéro tenu : 10 points par carte de la
-          manche. Pari manqué : −10 points par pli d&apos;écart, ou −10 par carte si le pari
-          était à zéro. Les primes ne comptent que si le pari est tenu.
+
+        <div className="choix-mode">
+          <button
+            className={'carte-mode' + (mode === SKULL_KING ? ' actif' : '')}
+            onClick={() => setMode(SKULL_KING)}
+            aria-pressed={mode === SKULL_KING}
+          >
+            <b>Skull King</b>
+            <small>Le comptage classique, pour les audacieux.</small>
+          </button>
+          <button
+            className={'carte-mode' + (mode === RASCAL ? ' actif' : '')}
+            onClick={() => setMode(RASCAL)}
+            aria-pressed={mode === RASCAL}
+          >
+            <b>Rascal</b>
+            <small>Même potentiel pour tous, la précision décide.</small>
+          </button>
+        </div>
+
+        <p className="discret" style={{ marginBottom: 0 }}>
+          {mode === SKULL_KING ? (
+            <>
+              Pari tenu : 20 points par pli annoncé. Pari à zéro tenu : 10 points par carte de
+              la manche. Pari manqué : −10 points par pli d&apos;écart, ou −10 par carte si le
+              pari était à zéro. Les primes sont acquises dans tous les cas.
+            </>
+          ) : (
+            <>
+              10 points par carte distribuée sont en jeu pour chacun, quelle que soit la mise.
+              Coup direct : tout. Frappe à revers, un pli d&apos;écart : la moitié. Échec
+              cuisant, deux ou plus : rien. Les primes suivent le même barème.
+            </>
+          )}
         </p>
+
+        {mode === RASCAL && (
+          <>
+            <hr className="filet" />
+            <button
+              className={'bascule-option' + (optionRascal ? ' actif' : '')}
+              onClick={() => setOptionRascal(!optionRascal)}
+              aria-pressed={optionRascal}
+            >
+              <span className="voyant-option" />
+              <span>
+                <b>Chevrotine ou boulet de canon</b>
+                <small>
+                  Règle optionnelle : chacun annonce après la mise. Le boulet rapporte 15 points
+                  par carte sur un coup direct, et rien du tout sinon.
+                </small>
+              </span>
+            </button>
+          </>
+        )}
       </div>
 
       <div className="barre">
@@ -211,9 +279,20 @@ function Jetons({ max, valeur, onChoisir }) {
 /* Primes d'une manche                                                 */
 /* ------------------------------------------------------------------ */
 
-function Primes({ primes, onChanger, actives }) {
+function Primes({ primes, onChanger, rascal, onRascal, mode, ecart, onCapture }) {
   const [ouvert, setOuvert] = useState(false)
   const somme = totalPrimes(primes)
+
+  // En mode Rascal, les primes suivent la précision de la mise : entières sur
+  // un coup direct, à moitié sur une frappe à revers, perdues au-delà.
+  const avisRascal =
+    mode === RASCAL && ecart != null && somme > 0
+      ? ecart === 0
+        ? null
+        : ecart === 1
+          ? 'Frappe à revers : ces primes comptent pour moitié.'
+          : 'Échec cuisant : ces primes ne comptent pas.'
+      : null
 
   return (
     <>
@@ -233,6 +312,9 @@ function Primes({ primes, onChanger, actives }) {
             const modifier = (delta) => {
               const suivant = Math.min(prime.max, Math.max(0, n + delta))
               onChanger({ ...primes, [prime.id]: suivant })
+              // Les captures ont droit à leur saynète, mais seulement quand on
+              // en ajoute une : la retirer ne doit pas rejouer la scène.
+              if (suivant > n) onCapture(prime.id)
             }
             return (
               <div className="ligne-prime" key={prime.id}>
@@ -273,9 +355,29 @@ function Primes({ primes, onChanger, actives }) {
               </div>
             )
           })}
-          {!actives && somme > 0 && (
-            <p className="avis-primes">Pari manqué : ces primes ne seront pas comptées.</p>
-          )}
+          {/* Pouvoir de Rascal le Flambeur : une mise à quitte ou double,
+              gagnée si le pari est tenu, perdue sinon. */}
+          <div className="ligne-prime pari-rascal">
+            <span className="etiquette-prime or">
+              <b>Pari Rascal</b>
+              <small>Gagné si le pari est tenu, perdu sinon</small>
+            </span>
+            <span className="choix-rascal">
+              {PARIS_RASCAL.map((valeur) => (
+                <button
+                  key={valeur}
+                  className={'jeton' + (rascal === valeur ? ' choisi' : '')}
+                  onClick={() => onRascal(valeur)}
+                  aria-pressed={rascal === valeur}
+                  aria-label={valeur === 0 ? 'Aucun pari Rascal' : `Parier ${valeur} points`}
+                >
+                  {valeur === 0 ? <Croix size={15} /> : valeur}
+                </button>
+              ))}
+            </span>
+          </div>
+
+          {avisRascal && <p className="avis-primes">{avisRascal}</p>}
         </div>
       )}
     </>
@@ -299,6 +401,26 @@ function Manche({ partie, setPartie }) {
   const [pariOuvert, setPariOuvert] = useState(null)
   const [krakenEnScene, setKrakenEnScene] = useState(false)
   const [baleineEnScene, setBaleineEnScene] = useState(false)
+  // Saynète de capture en cours, s'il y en a une : elle ne laisse aucune trace.
+  const [capture, setCapture] = useState(null)
+
+  const mode = partie.mode || SKULL_KING
+  const optionRascal = Boolean(partie.optionRascal)
+
+  const CAPTURES_SONORES = {
+    pirateParSk: 'skullking',
+    sireneParPirate: 'pirate',
+    skParSirene: 'sirene',
+  }
+
+  // Le compteur sert de clé de rendu : deux captures d'affilée remontent la
+  // scène à neuf, et l'animation rejoue depuis le début.
+  const declencherCapture = (idPrime) => {
+    const son = CAPTURES_SONORES[idPrime]
+    if (!son) return
+    jouerSon(son)
+    setCapture((precedente) => ({ type: idPrime, n: (precedente ? precedente.n : 0) + 1 }))
+  }
 
   const majLigne = (idJoueur, champs) =>
     setPartie({
@@ -372,11 +494,11 @@ function Manche({ partie, setPartie }) {
 
   /* --- Bilan de fin de manche --- */
   if (etape === 'bilan') {
-    const table = classement(joueurs, manches)
+    const table = classement(joueurs, manches, mode)
     const resultats = joueurs
       .map((joueur) => ({
         joueur,
-        ...scoreManche(lignes[joueur.id], manche),
+        ...scoreManche(lignes[joueur.id], manche, mode),
         cumul: table.find((l) => l.joueur.id === joueur.id).total,
       }))
       .sort((a, b) => b.cumul - a.cumul)
@@ -459,6 +581,13 @@ function Manche({ partie, setPartie }) {
     <>
       {krakenEnScene && <AnimationKraken onFini={() => setKrakenEnScene(false)} />}
       {baleineEnScene && <AnimationBaleine onFini={() => setBaleineEnScene(false)} />}
+      {capture && (
+        <AnimationCapture
+          key={capture.n}
+          type={capture.type}
+          onFini={() => setCapture(null)}
+        />
+      )}
       {/* Les tentacules s'installent une fois la bête passée, et restent
           agrippées tant que le Kraken est déclaré sur la manche. */}
       {kraken && !krakenEnScene && <EmpriseKraken />}
@@ -499,7 +628,7 @@ function Manche({ partie, setPartie }) {
               }
             >
               <Baleine size={17} />
-              Baleine / Fuites
+              Baleine sans pli
             </button>
           </div>
         </div>
@@ -595,10 +724,37 @@ function Manche({ partie, setPartie }) {
                   valeur={ligne.plis}
                   onChoisir={(n) => majLigne(joueur.id, { plis: n })}
                 />
+                {mode === RASCAL && optionRascal && (
+                  <div className="choix-mise">
+                    <button
+                      className={'puce-mise' + (ligne.mise !== BOULET ? ' actif' : '')}
+                      onClick={() => majLigne(joueur.id, { mise: CHEVROTINE })}
+                      aria-pressed={ligne.mise !== BOULET}
+                    >
+                      <Main size={16} /> Chevrotine
+                    </button>
+                    <button
+                      className={'puce-mise' + (ligne.mise === BOULET ? ' actif' : '')}
+                      onClick={() => majLigne(joueur.id, { mise: BOULET })}
+                      aria-pressed={ligne.mise === BOULET}
+                    >
+                      <Poing size={16} /> Boulet
+                    </button>
+                  </div>
+                )}
+
                 <Primes
                   primes={ligne.primes}
-                  actives={ligne.plis != null && ligne.plis === ligne.pari}
                   onChanger={(primes) => majLigne(joueur.id, { primes })}
+                  rascal={ligne.rascal || 0}
+                  onRascal={(rascal) => majLigne(joueur.id, { rascal })}
+                  mode={mode}
+                  ecart={
+                    ligne.plis != null && ligne.pari != null
+                      ? Math.abs(ligne.pari - ligne.plis)
+                      : null
+                  }
+                  onCapture={declencherCapture}
                 />
               </>
             )}
@@ -674,8 +830,8 @@ function Manche({ partie, setPartie }) {
 function Scores({ partie, complet }) {
   const [ouvert, setOuvert] = useState(null)
   const table = useMemo(
-    () => classement(partie.joueurs, partie.manches),
-    [partie.joueurs, partie.manches],
+    () => classement(partie.joueurs, partie.manches, partie.mode || SKULL_KING),
+    [partie.joueurs, partie.manches, partie.mode],
   )
 
   return (
@@ -753,7 +909,7 @@ function Scores({ partie, complet }) {
 /* ------------------------------------------------------------------ */
 
 function Fin({ partie, onRejouer, onNouvelle }) {
-  const table = classement(partie.joueurs, partie.manches)
+  const table = classement(partie.joueurs, partie.manches, partie.mode || SKULL_KING)
   const vainqueurs = table.filter((l) => l.rang === 1)
   const Avatar = avatarParId(vainqueurs[0].joueur.avatar)
 
@@ -851,9 +1007,11 @@ export default function App() {
     }
   }, [enPartie])
 
-  const demarrer = (joueurs) => {
+  const demarrer = (joueurs, mode = SKULL_KING, optionRascal = false) => {
     setPartie({
       joueurs,
+      mode,
+      optionRascal,
       manche: 1,
       etape: 'paris',
       manches: {},
@@ -863,7 +1021,9 @@ export default function App() {
     setVue('manche')
   }
 
-  const rejouer = () => demarrer(partie.joueurs)
+  // Rejouer garde l'équipage et le mode de comptage de la partie qui s'achève.
+  const rejouer = () =>
+    demarrer(partie.joueurs, partie.mode || SKULL_KING, Boolean(partie.optionRascal))
 
   const nouvelle = () => setPartie(null)
 
