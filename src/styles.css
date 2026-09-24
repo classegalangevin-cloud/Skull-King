@@ -935,7 +935,18 @@ button.etat.scelle {
   animation: kraken-deploie 1150ms cubic-bezier(0.22, 1.1, 0.36, 1) backwards;
 }
 
-.kraken-yeux {
+/* Les bras ondulent sans fin une fois déployés, chacun à son rythme */
+.kraken-ondule {
+  transform-box: view-box;
+  animation: kraken-ondule 1.5s ease-in-out infinite alternate;
+}
+
+/* Les yeux s'ouvrent, clignent une fois, puis couvent ; leur lueur sur
+   l'arcade suit. */
+.kraken-oeil,
+.kraken-reflet-oeil {
+  transform-box: fill-box;
+  transform-origin: center;
   animation: kraken-regard 1500ms ease-out 700ms backwards;
 }
 
@@ -976,11 +987,16 @@ button.etat.scelle {
 }
 
 @keyframes kraken-regard {
-  0% { opacity: 0; }
-  35% { opacity: 1; }
-  55% { opacity: 0.55; }
-  75% { opacity: 1; }
-  100% { opacity: 1; }
+  0% { opacity: 0; transform: scaleY(0.1); }
+  35% { opacity: 1; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1); }
+  55% { opacity: 0.6; transform: scaleY(0.15); }
+  62%, 100% { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes kraken-ondule {
+  0% { transform: rotate(-2.5deg); }
+  100% { transform: rotate(2.5deg); }
 }
 
 @keyframes kraken-cri {

@@ -6,8 +6,9 @@ import { mouvementReduit } from './mouvement.js'
 // blanc traverse l'écran de la droite vers la gauche.
 //
 // Il est dessiné bien plus long et plus haut que le cadre : on ne le voit
-// jamais en entier, seulement défiler — le mufle carré, puis le flanc couturé
-// de cicatrices, puis la caudale. Même facture que la scène du Kraken (voile
+// jamais en entier, seulement défiler — le mufle carré couvert de bernacles,
+// puis le flanc couturé de cicatrices et hérissé de harpons dont les filins
+// traînent encore, puis la caudale. D'après une aquarelle de Moby Dick. Même facture que la scène du Kraken (voile
 // plein écran, cri en lettres gothiques, sortie en fondu), mais dans des bleus
 // froids pour que les deux incidents ne se confondent jamais.
 
@@ -54,14 +55,175 @@ const VENTOUSES = [
   { cx: 452, cy: -172, r: 8 },
 ]
 
-// Entailles profondes, souvenirs de harpons.
+// Entailles profondes, souvenirs de harpons, et deux longues balafres
+// refermées. Tracées en chair rosée, avec la ligne sombre de la plaie au
+// milieu.
 const ENTAILLES = [
   'M 470 -196 l 54 26',
   'M 604 -178 l 46 30',
   'M 836 118 l 58 -22',
   'M 1012 -108 l 40 26',
   'M 690 152 l 44 -18',
+  'M 250 -118 C 330 -98, 410 -60, 462 -12',
+  'M 700 -96 C 760 -66, 820 -46, 884 -36',
 ]
+
+// Silhouette du corps, en quelques points, pour semer les détails dessus sans
+// déborder : bord du dos et bord du ventre selon x.
+const DOS = [[20, -96], [60, -180], [132, -211], [338, -215], [510, -185], [700, -163], [910, -137], [1000, -125], [1100, -90], [1194, -56]]
+const VENTRE = [[20, -40], [60, 60], [98, 105], [250, 145], [386, 167], [474, 183], [704, 169], [997, 125], [1100, 92], [1194, 56]]
+
+const interpole = (bord, x) => {
+  const i = Math.max(1, bord.findIndex(([bx]) => bx >= x))
+  const [x0, y0] = bord[i - 1]
+  const [x1, y1] = bord[i]
+  return y0 + ((y1 - y0) * (x - x0)) / (x1 - x0)
+}
+
+// Tirage pseudo-aléatoire à graine fixe : la baleine est la même à chaque
+// passage.
+function alea(graine) {
+  let s = graine
+  return () => {
+    s = (s * 16807) % 2147483647
+    return (s - 1) / 2147483646
+  }
+}
+
+// Un point au hasard sur le flanc, à distance des bords
+function surLeFlanc(hasard, xMin, xMax, marge = 14) {
+  const x = xMin + hasard() * (xMax - xMin)
+  const haut = interpole(DOS, x) + marge
+  const bas = interpole(VENTRE, x) - marge
+  return [x, haut + hasard() * (bas - haut)]
+}
+
+// Fines stries, comme sur les vieux cachalots : rouille, blanches ou grises,
+// parfois par deux ou trois, parallèles.
+const STRIES = (() => {
+  const h = alea(7)
+  const couleurs = [
+    ['#7a4e3e', 0.5],
+    ['#ffffff', 0.45],
+    ['#56656e', 0.4],
+  ]
+  const liste = []
+  for (let i = 0; i < 90; i++) {
+    const [x, y] = surLeFlanc(h, 50, 1170)
+    const long = 18 + h() * 70
+    const pente = (h() - 0.5) * 0.9
+    const courbe = (h() - 0.5) * 10
+    const [couleur, opacite] = couleurs[Math.floor(h() * couleurs.length)]
+    const nombre = h() < 0.25 ? 3 : h() < 0.4 ? 2 : 1
+    for (let k = 0; k < nombre; k++) {
+      liste.push({
+        d: `M${x.toFixed(0)} ${(y + k * 5).toFixed(0)} q ${(long / 2).toFixed(0)} ${courbe.toFixed(1)} ${long.toFixed(0)} ${(long * pente).toFixed(0)}`,
+        couleur,
+        opacite,
+        largeur: 0.8 + h() * 0.9,
+      })
+    }
+  }
+  return liste
+})()
+
+// Peau plissée du cachalot, en vaguelettes sur l'arrière du corps
+const RIDES = (() => {
+  const h = alea(31)
+  return Array.from({ length: 70 }, () => {
+    const [x, y] = surLeFlanc(h, 470, 1170, 20)
+    return `M${x.toFixed(0)} ${y.toFixed(0)} c 8 -3, 16 3, 24 0 s 16 -3, 24 0`
+  })
+})()
+
+// Taches de lavis sur la peau, claires ou verdâtres, pour casser l'aplat
+const LAVIS = (() => {
+  const h = alea(97)
+  return Array.from({ length: 26 }, (_, i) => {
+    const [cx, cy] = surLeFlanc(h, 40, 1170, 30)
+    return {
+      cx,
+      cy,
+      rx: 20 + h() * 46,
+      ry: 8 + h() * 18,
+      a: (h() - 0.5) * 30,
+      couleur: i % 3 ? '#8a9a8f' : '#ffffff',
+    }
+  })
+})()
+
+// Bernacles en grappes, surtout autour du mufle
+const BERNACLES = (() => {
+  const h = alea(53)
+  const grappes = [[74, -40], [50, 28], [150, 116], [300, 150], [1150, 30], [120, -150]]
+  return grappes.flatMap(([cx, cy]) =>
+    Array.from({ length: 7 }, () => ({
+      cx: cx + (h() - 0.5) * 34,
+      cy: cy + (h() - 0.5) * 26,
+      r: 2 + h() * 2.6,
+    })),
+  )
+})()
+
+/* ------------------------------------------------------------------ */
+/* Les harpons                                                         */
+/* ------------------------------------------------------------------ */
+
+// Harpons restés plantés : une plaie refermée autour de la tige, le fer, la
+// hampe de bois, brisée pour certains. Les autres traînent encore leur
+// filin, que l'eau fait onduler vers l'arrière. Ils pointent vers le haut et
+// l'arrière, couchés par la nage.
+const HARPONS = [
+  { x: 196, y: -206, angle: -58, longueur: 96, filin: 170 },
+  { x: 330, y: -213, angle: -66, longueur: 130, filin: 220 },
+  { x: 470, y: -190, angle: -52, longueur: 74, casse: true },
+  { x: 612, y: -174, angle: -62, longueur: 118, filin: 200 },
+  { x: 760, y: -158, angle: -70, longueur: 104, casse: true },
+  { x: 900, y: -138, angle: -48, longueur: 92, filin: 160 },
+  { x: 560, y: 20, angle: -28, longueur: 80, filin: 140 },
+  { x: 820, y: 60, angle: -22, longueur: 60, casse: true },
+  { x: 1060, y: -92, angle: -40, longueur: 70, casse: true },
+]
+
+function Harpon({ x, y, angle, longueur, casse }) {
+  return (
+    <g transform={`translate(${x} ${y}) rotate(${angle})`}>
+      {/* Plaie : chair refermée en bourrelet autour de la tige */}
+      <ellipse cx="0" cy="0" rx="11" ry="6.5" fill="none" stroke="#c4867c" strokeOpacity="0.55" strokeWidth="2.4" />
+      <ellipse cx="0" cy="0" rx="6.5" ry="4" fill="#5e2522" fillOpacity="0.8" />
+      {/* Fer, douille, puis la hampe et son fil de bois */}
+      <line x1="0" y1="0" x2="22" y2="0" stroke="#3b4046" strokeWidth="3.4" strokeLinecap="round" />
+      <rect x="18" y="-3.6" width="9" height="7.2" rx="1.5" fill="#2b2f34" />
+      <line x1="26" y1="0" x2={longueur} y2="0" stroke="#6b4828" strokeWidth="5.6" strokeLinecap={casse ? 'butt' : 'round'} />
+      <line x1="28" y1="-1.2" x2={longueur - 4} y2="-1.2" stroke="#a87c48" strokeOpacity="0.8" strokeWidth="1.2" />
+      {casse ? (
+        // Hampe brisée : un bout d'échardes
+        <path
+          d={`M${longueur} -2.8 L${longueur + 7} -1.5 L${longueur + 3} 0 L${longueur + 9} 1.2 L${longueur + 2} 2.8 Z`}
+          fill="#8a6236"
+        />
+      ) : (
+        <circle cx={longueur} cy="0" r="3.4" fill="#2b2f34" />
+      )}
+    </g>
+  )
+}
+
+// Filin qui traîne derrière un harpon : il part de la douille et ondule vers
+// l'arrière (la droite), en retombant un peu.
+function Filin({ x, y, angle, filin }) {
+  const a = (angle * Math.PI) / 180
+  const ax = x + Math.cos(a) * 30
+  const ay = y + Math.sin(a) * 30
+  const l = filin
+  const forme = (s) =>
+    `M${ax.toFixed(1)} ${ay.toFixed(1)} C${(ax + l * 0.3).toFixed(1)} ${(ay + 14 * s).toFixed(1)}, ${(ax + l * 0.6).toFixed(1)} ${(ay - 10 * s).toFixed(1)}, ${(ax + l).toFixed(1)} ${(ay + 22).toFixed(1)}`
+  return (
+    <path d={forme(1)} fill="none" stroke="#b9a582" strokeOpacity="0.8" strokeWidth="2.4" strokeLinecap="round" strokeDasharray="5 2">
+      <animate attributeName="d" values={`${forme(1)};${forme(-1)};${forme(1)}`} dur="1.3s" repeatCount="indefinite" />
+    </path>
+  )
+}
 
 /* ------------------------------------------------------------------ */
 /* Le souffle                                                          */
@@ -269,23 +431,80 @@ export default function AnimationBaleine({ onFini }) {
               fill="url(#baleine-peau)"
             />
 
-            {/* --- Nageoire pectorale --- */}
+            {/* --- Taches de lavis --- */}
+            <g>
+              {LAVIS.map((t, i) => (
+                <ellipse
+                  key={i}
+                  cx={t.cx.toFixed(0)}
+                  cy={t.cy.toFixed(0)}
+                  rx={t.rx.toFixed(0)}
+                  ry={t.ry.toFixed(0)}
+                  transform={`rotate(${t.a.toFixed(0)} ${t.cx.toFixed(0)} ${t.cy.toFixed(0)})`}
+                  fill={t.couleur}
+                  fillOpacity="0.12"
+                />
+              ))}
+            </g>
+
+            {/* --- Peau plissée de l'arrière du corps --- */}
+            <g fill="none" stroke="#4e5d66" strokeOpacity="0.28" strokeWidth="1.2" strokeLinecap="round">
+              {RIDES.map((d, i) => (
+                <path key={i} d={d} />
+              ))}
+            </g>
+
+            {/* --- Bouche : la commissure file jusque sous l'œil --- */}
+            <path
+              d="M60 96 C160 130, 290 156, 392 166"
+              fill="none"
+              stroke="#33424b"
+              strokeOpacity="0.7"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+            {/* --- Évent, en S à l'avant gauche du crâne --- */}
+            <path d="M34 -190 c 6 -4, 12 -2, 16 2 c 4 4, 10 5, 16 2" fill="none" stroke="#2c3a42" strokeWidth="3" strokeLinecap="round" />
+
+            {/* --- Nageoire pectorale, ses rayons et une encoche --- */}
             <path
               d="M506 150 C534 206, 590 250, 648 262
                  C620 216, 574 172, 536 142 Z"
               fill="#46555f"
             />
+            <g fill="none" stroke="#2c3a42" strokeOpacity="0.5" strokeWidth="1.2">
+              <path d="M522 152 C546 196, 584 232, 628 254 M530 148 C556 186, 590 216, 634 240" />
+            </g>
+            <path d="M590 236 l 8 10 l 6 -6" fill="none" stroke="#dfe6e8" strokeOpacity="0.5" strokeWidth="2" />
+
+            {/* --- Bosses de la queue, le long du dos --- */}
+            <g fill="none" stroke="#e8eef0" strokeOpacity="0.35" strokeWidth="2" strokeLinecap="round">
+              {[1024, 1060, 1094, 1128, 1160].map((x) => (
+                <path key={x} d={`M${x} ${(interpole(DOS, x) + 3).toFixed(0)} q 12 -9 24 0`} />
+              ))}
+            </g>
 
             {/* --- Cicatrices --- */}
             <g className="baleine-cicatrices">
+              {STRIES.map((s, i) => (
+                <path
+                  key={`s${i}`}
+                  d={s.d}
+                  fill="none"
+                  stroke={s.couleur}
+                  strokeOpacity={s.opacite}
+                  strokeWidth={s.largeur.toFixed(2)}
+                  strokeLinecap="round"
+                />
+              ))}
               {GRIFFURES.map((d, i) => (
                 <path
                   key={i}
                   d={d}
                   fill="none"
                   stroke="#ffffff"
-                  strokeOpacity="0.5"
-                  strokeWidth="3"
+                  strokeOpacity="0.32"
+                  strokeWidth="2.4"
                   strokeLinecap="round"
                 />
               ))}
@@ -302,35 +521,46 @@ export default function AnimationBaleine({ onFini }) {
                 />
               ))}
               {ENTAILLES.map((d, i) => (
-                <path
-                  key={i}
-                  d={d}
-                  fill="none"
-                  stroke="#ffffff"
-                  strokeOpacity="0.58"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                />
+                <g key={i}>
+                  <path d={d} fill="none" stroke="#d9a39a" strokeOpacity="0.6" strokeWidth="7" strokeLinecap="round" />
+                  <path d={d} fill="none" stroke="#7d4a44" strokeOpacity="0.6" strokeWidth="1.6" strokeLinecap="round" />
+                </g>
               ))}
             </g>
 
-            {/* --- Harpon brisé planté dans le dos, et son bout de filin --- */}
+            {/* --- Bernacles --- */}
             <g>
-              <path d="M742 -166 l 26 -74" stroke="#2b1c14" strokeWidth="9" strokeLinecap="round" />
-              <path d="M742 -166 l 26 -74" stroke="#8a6a3a" strokeWidth="4" strokeLinecap="round" />
-              <path
-                d="M768 -240 c 26 -10, 52 4, 64 26 c 10 18, 6 40, -8 54"
-                fill="none"
-                stroke="#7a6a58"
-                strokeOpacity="0.75"
-                strokeWidth="3.4"
-                strokeLinecap="round"
-              />
+              {BERNACLES.map((b, i) => (
+                <g key={i}>
+                  <circle cx={b.cx.toFixed(1)} cy={b.cy.toFixed(1)} r={b.r.toFixed(1)} fill="#d9d4c4" stroke="#6b767c" strokeWidth="0.8" />
+                  <circle cx={b.cx.toFixed(1)} cy={b.cy.toFixed(1)} r={(b.r * 0.38).toFixed(1)} fill="#5b6469" />
+                </g>
+              ))}
             </g>
 
-            {/* --- Œil, petit et froid, loin derrière le mufle --- */}
+            {/* --- Harpons plantés, et leurs filins qui traînent --- */}
+            {HARPONS.filter((h) => h.filin).map((h, i) => (
+              <Filin key={i} {...h} />
+            ))}
+            {HARPONS.map((h, i) => (
+              <Harpon key={i} {...h} />
+            ))}
+
+            {/* --- Caudale : cicatrices et encoches --- */}
+            <g fill="none" stroke="#7a4e3e" strokeOpacity="0.45" strokeWidth="1.2" strokeLinecap="round">
+              <path d="M1250 -60 q 30 -30 70 -60 M1270 -40 q 40 -30 90 -50 M1262 60 q 40 30 80 60 M1300 40 q 30 30 60 70" />
+            </g>
+
+            {/* --- Œil, petit et froid, loin derrière le mufle, dans ses rides --- */}
+            <g fill="none" stroke="#2c3a42" strokeOpacity="0.55" strokeWidth="1.4" strokeLinecap="round">
+              <path d="M438 38 C448 26, 474 24, 488 36" />
+              <path d="M436 52 C450 62, 474 62, 490 50" />
+              <path d="M432 30 C446 16, 478 14, 494 28" strokeOpacity="0.3" />
+              <path d="M490 44 L504 42 M488 52 L500 58" strokeOpacity="0.35" />
+            </g>
             <ellipse cx="462" cy="44" rx="13" ry="10" fill="#141c22" />
             <circle cx="458" cy="41" r="3.6" fill="#efc463" />
+            <circle cx="456.5" cy="39.5" r="1.1" fill="#ffffff" fillOpacity="0.8" />
 
             {/* --- Reflet doré sur le dos, pour rester dans la palette --- */}
             <path
