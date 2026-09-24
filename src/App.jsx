@@ -35,7 +35,7 @@ import {
 } from './scoring.js'
 import AnimationKraken, { EmpriseKraken } from './Kraken.jsx'
 import AnimationBaleine, { SillageBaleine } from './Baleine.jsx'
-import AnimationCapture from './Captures.jsx'
+import AnimationCapture, { CAPTURES } from './Captures.jsx'
 import {
   estSilencieux,
   jouerSon,
@@ -407,18 +407,11 @@ function Manche({ partie, setPartie }) {
   const mode = partie.mode || SKULL_KING
   const optionRascal = Boolean(partie.optionRascal)
 
-  const CAPTURES_SONORES = {
-    pirateParSk: 'skullking',
-    sireneParPirate: 'pirate',
-    skParSirene: 'sirene',
-  }
-
   // Le compteur sert de clé de rendu : deux captures d'affilée remontent la
-  // scène à neuf, et l'animation rejoue depuis le début.
+  // scène à neuf, et l'animation rejoue depuis le début. La saynète joue
+  // elle-même son bruitage, calé sur l'image.
   const declencherCapture = (idPrime) => {
-    const son = CAPTURES_SONORES[idPrime]
-    if (!son) return
-    jouerSon(son)
+    if (!CAPTURES.includes(idPrime)) return
     setCapture((precedente) => ({ type: idPrime, n: (precedente ? precedente.n : 0) + 1 }))
   }
 

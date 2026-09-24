@@ -11,6 +11,8 @@ export const estSilencieux = () => true
 
 export function reglerSilence() {}
 
+export function preparerSon() {}
+
 export function jouerSon() {}
 
 export function taireTout() {}

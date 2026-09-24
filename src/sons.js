@@ -52,6 +52,12 @@ function element(nom) {
   return pretsAJouer[nom]
 }
 
+// Charge un bruitage à l'avance, quand on sait qu'il va servir sous peu :
+// une saynète le prépare dès son ouverture et le joue au bon moment.
+export function preparerSon(nom) {
+  if (FICHIERS[nom]) element(nom)
+}
+
 export function jouerSon(nom) {
   if (silencieux || !FICHIERS[nom]) return
   try {

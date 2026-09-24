@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
+import { jouerSon, preparerSon } from '@sons'
 import { mouvementReduit } from './mouvement.js'
 
 // Trois saynètes jouées au moment où l'on inscrit une prime de capture.
@@ -11,6 +12,12 @@ import { mouvementReduit } from './mouvement.js'
 //   skParSirene      la sirène joue de la harpe et envoûte le Skull King
 
 const DUREE = 1800
+
+// Chaque scène lance elle-même son bruitage, à l'instant où l'image le
+// réclame (« son.a », en ms depuis le début de la scène) : la herse qui
+// touche le fond, le premier éclat de rire. On le déclenche un poil en
+// avance, le temps que le téléphone démarre la lecture.
+const AVANCE_SON = 40
 
 /* ------------------------------------------------------------------ */
 /* Le fond marin des deux scènes de sirène                             */
@@ -1177,13 +1184,26 @@ function FondChant() {
 /* ------------------------------------------------------------------ */
 
 const SCENES = {
-  pirateParSk: { titre: 'Pirate capturé !', dessin: SkullKingRit, teinte: 'braise', duree: 2600 },
+  // skullking.mp3 : un grondement, puis le grand « HA » 0,75 s après le
+  // départ du son. Lancé à 0,25 s, le grondement enfle pendant la chute du
+  // crâne et le rire éclate juste après l'embrasement des yeux ; la mâchoire
+  // suit chacun de ses éclats (voir styles.css).
+  pirateParSk: {
+    titre: 'Pirate capturé !',
+    dessin: SkullKingRit,
+    teinte: 'braise',
+    duree: 2900,
+    son: { nom: 'skullking', a: 250 },
+  },
+  // pirate.mp3 : le fracas culmine 0,41 s après le départ du son. Lancé à
+  // 0,47 s, il tombe pile quand la herse touche le fond (0,88 s).
   sireneParPirate: {
     titre: 'Sirène capturée !',
     dessin: SireneEmprisonnee,
     fond: FondPrison,
     teinte: 'fer',
     duree: 2400,
+    son: { nom: 'pirate', a: 470 },
   },
   skParSirene: {
     titre: 'Skull King capturé !',
@@ -1192,6 +1212,7 @@ const SCENES = {
     teinte: 'mer',
     duree: 2800,
     vue: '-8 -44 280 350',
+    son: { nom: 'sirene', a: 0 },
   },
 }
 
@@ -1201,14 +1222,30 @@ export default function AnimationCapture({ type, onFini }) {
   const sansAnimation = mouvementReduit()
   const scene = SCENES[type]
 
+  // onFini change à chaque rendu du parent : le garder hors des dépendances,
+  // sinon le moindre rendu relancerait les minuteurs — et rejouerait le son.
+  const finir = useRef(onFini)
+  finir.current = onFini
+
   useEffect(() => {
-    if (!scene || sansAnimation) {
-      onFini()
+    if (!scene) {
+      finir.current()
       return undefined
     }
-    const minuteur = setTimeout(onFini, scene.duree || DUREE)
-    return () => clearTimeout(minuteur)
-  }, [onFini, sansAnimation, scene])
+    // Sans animation, le son part tout de suite : il n'a rien à attendre.
+    if (sansAnimation) {
+      jouerSon(scene.son.nom)
+      finir.current()
+      return undefined
+    }
+    preparerSon(scene.son.nom)
+    const top = setTimeout(() => jouerSon(scene.son.nom), Math.max(0, scene.son.a - AVANCE_SON))
+    const fin = setTimeout(() => finir.current(), scene.duree || DUREE)
+    return () => {
+      clearTimeout(top)
+      clearTimeout(fin)
+    }
+  }, [sansAnimation, scene])
 
   if (!scene || sansAnimation) return null
 
@@ -1218,7 +1255,7 @@ export default function AnimationCapture({ type, onFini }) {
   return (
     <div
       className={`capture-scene ${scene.teinte}`}
-      style={{ '--duree': `${scene.duree || DUREE}ms` }}
+      style={{ '--duree': `${scene.duree || DUREE}ms`, '--son': `${scene.son.a}ms` }}
       role="presentation"
     >
       <svg className="capture-dessin" viewBox={scene.vue || '0 0 240 300'} aria-hidden="true">

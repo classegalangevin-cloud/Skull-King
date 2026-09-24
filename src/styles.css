@@ -1307,7 +1307,8 @@ button.etat.scelle {
 
 /* La sirène paraît, puis la herse tombe (≈ 0,88 s) : l'eau tremble, elle
    sursaute, le sable se soulève, et ses doigts se referment sur les
-   barreaux. */
+   barreaux. Le fracas de pirate.mp3 est calé sur cet impact (voir « son »
+   dans Captures.jsx) : si l'on déplace la chute, il faut déplacer le son. */
 
 /* Le titre attend que la herse soit tombée */
 .capture-scene.fer .capture-titre {
@@ -1579,14 +1580,22 @@ button.etat.scelle {
 
 /* ---------- Capture d'un pirate par le Skull King ---------- */
 
-/* Tout est calé sur une seule horloge de 2,6 s : chaque pièce joue sa partie
-   en pourcentage de cette durée, ce qui garde l'impact, l'embrasement des
-   yeux et le rire parfaitement synchrones.
+/* Horloge de 2,9 s : chaque pièce joue sa partie en pourcentage de cette
+   durée, ce qui garde l'impact et l'embrasement des yeux synchrones.
      0 → 10 %   les sabres jaillissent des coins et se croisent
-    10 → 20 %   le crâne tombe dessus — impact, onde de choc, secousse
-    30 → 36 %   les orbites s'embrasent
-    40 → 72 %   il ricane, tête renversée
-    86 → 100 %  tout s'éteint */
+     9 → 18 %   le crâne tombe dessus — impact, onde de choc, secousse
+    26 → 32 %   les orbites s'embrasent
+    35 → 82 %   il ricane, tête renversée
+    86 → 100 %  tout s'éteint
+
+   Le rire, lui, suit le son : skullking.mp3 part à --son (0,25 s, réglé
+   dans Captures.jsx). Mesuré dans le fichier, après le départ du son :
+     0 → 0,70 s     un grondement qui enfle — pendant la chute du crâne
+     0,75 → 0,99 s  le grand « HA », le plus fort — juste après les yeux
+     ≈ 1,15 · 1,28 · 1,40 · 1,53 · 1,68 s   cinq éclats qui faiblissent
+     1,80 → 1,93 s  silence, puis un dernier souffle vers 2,02 s
+   La mâchoire s'ouvre sur chacun, la tête se renverse d'autant plus que
+   l'éclat est fort, et les braises des yeux flambent avec. */
 
 .capture-scene.braise {
   background:
@@ -1651,11 +1660,11 @@ button.etat.scelle {
 .sk-rire {
   transform-box: view-box;
   transform-origin: 120px 280px;
-  animation: sk-rire var(--duree) ease-in-out forwards;
+  animation: sk-rire 2300ms ease-in-out var(--son) both;
 }
 
 .capture-scene.braise .capture-machoire {
-  animation: sk-machoire var(--duree) ease-in-out forwards;
+  animation: sk-machoire 2300ms ease-in-out var(--son) both;
 }
 
 .sk-dreads {
@@ -1698,132 +1707,175 @@ button.etat.scelle {
 
 @keyframes sk-voile {
   0% { opacity: 0; }
-  6% { opacity: 1; }
+  5.4% { opacity: 1; }
   86% { opacity: 1; }
   100% { opacity: 0; }
 }
 
 @keyframes sk-flash {
-  0%, 19% { opacity: 0; }
-  20.5% { opacity: 1; }
-  32% { opacity: 0; }
+  0%, 17% { opacity: 0; }
+  18.4% { opacity: 1; }
+  28.7% { opacity: 0; }
   100% { opacity: 0; }
 }
 
 @keyframes sk-secousse {
-  0%, 20% { transform: translate(0, 0); }
-  21% { transform: translate(-8px, 6px); }
-  22.5% { transform: translate(7px, -5px); }
-  24% { transform: translate(-5px, 3px); }
-  25.5% { transform: translate(3px, -2px); }
-  27% { transform: translate(-1px, 1px); }
-  28.5%, 100% { transform: translate(0, 0); }
+  0%, 17.9% { transform: translate(0, 0); }
+  18.8% { transform: translate(-8px, 6px); }
+  20.2% { transform: translate(7px, -5px); }
+  21.5% { transform: translate(-5px, 3px); }
+  22.9% { transform: translate(3px, -2px); }
+  24.2% { transform: translate(-1px, 1px); }
+  25.6%, 100% { transform: translate(0, 0); }
 }
 
 @keyframes sk-halo {
   0% { opacity: 0; transform: scale(0.5); }
-  19% { opacity: 0.35; transform: scale(0.7); }
-  24% { opacity: 1; transform: scale(1.12); }
-  32% { transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(1.04); }
-  70% { opacity: 1; transform: scale(0.98); }
+  17% { opacity: 0.35; transform: scale(0.7); }
+  21.5% { opacity: 1; transform: scale(1.12); }
+  28.7% { transform: scale(1); }
+  44.8% { opacity: 0.85; transform: scale(1.04); }
+  62.8% { opacity: 1; transform: scale(0.98); }
   100% { opacity: 0.9; transform: scale(1.05); }
 }
 
 @keyframes sk-rayons {
-  0%, 18% { opacity: 0; transform: rotate(0deg); }
-  26% { opacity: 1; }
+  0%, 16.1% { opacity: 0; transform: rotate(0deg); }
+  23.3% { opacity: 1; }
   100% { opacity: 1; transform: rotate(38deg); }
 }
 
 @keyframes sk-sabre {
   0% { transform: translateY(360px); }
-  9% { transform: translateY(-8px); }
-  11%, 100% { transform: translateY(0); }
+  8.1% { transform: translateY(-8px); }
+  9.9%, 100% { transform: translateY(0); }
 }
 
 @keyframes sk-reflet {
-  0%, 21% { stroke-dashoffset: 40; opacity: 0; }
-  23% { opacity: 1; }
-  36% { stroke-dashoffset: -300; opacity: 0.9; }
-  38%, 100% { stroke-dashoffset: -300; opacity: 0; }
+  0%, 18.8% { stroke-dashoffset: 40; opacity: 0; }
+  20.6% { opacity: 1; }
+  32.3% { stroke-dashoffset: -300; opacity: 0.9; }
+  34.1%, 100% { stroke-dashoffset: -300; opacity: 0; }
 }
 
 @keyframes sk-onde {
-  0%, 19.5% { opacity: 0; transform: scale(0.4); stroke-width: 8px; }
-  20.5% { opacity: 1; }
-  38% { opacity: 0; transform: scale(3); stroke-width: 1px; }
+  0%, 17.5% { opacity: 0; transform: scale(0.4); stroke-width: 8px; }
+  18.4% { opacity: 1; }
+  34.1% { opacity: 0; transform: scale(3); stroke-width: 1px; }
   100% { opacity: 0; transform: scale(3); }
 }
 
 @keyframes sk-tete {
-  0%, 9% { opacity: 0; transform: translateY(-230px) scale(1.3); }
-  10% { opacity: 1; transform: translateY(-230px) scale(1.3); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
-  20% { transform: translateY(0) scale(1); animation-timing-function: ease-out; }
-  22% { transform: translateY(5px) scale(1.07, 0.92); }
-  25% { transform: translateY(-3px) scale(0.97, 1.03); }
-  28%, 86% { opacity: 1; transform: translateY(0) scale(1); }
+  0%, 8.1% { opacity: 0; transform: translateY(-230px) scale(1.3); }
+  9% { opacity: 1; transform: translateY(-230px) scale(1.3); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+  17.9% { transform: translateY(0) scale(1); animation-timing-function: ease-out; }
+  19.7% { transform: translateY(5px) scale(1.07, 0.92); }
+  22.4% { transform: translateY(-3px) scale(0.97, 1.03); }
+  25.1%, 86% { opacity: 1; transform: translateY(0) scale(1); }
   100% { opacity: 1; transform: translateY(0) scale(1.08); }
 }
 
-/* Le rire : quatre ricanements, la tête renversée un peu plus à chacun,
-   puis la mâchoire se referme sur un rictus. */
+/* Le rire, sur l'horloge du son (2,3 s à partir de --son). Pendant le
+   grondement, le menton s'abaisse et la mâchoire claque des dents ; puis la
+   tête part en arrière sur le grand « HA » et un peu moins à chaque éclat. */
 @keyframes sk-rire {
-  0%, 40% { transform: rotate(0deg) translateY(0); }
-  44% { transform: rotate(-3deg) translateY(-4px); }
-  48% { transform: rotate(-1.5deg) translateY(-1px); }
-  52% { transform: rotate(-4deg) translateY(-5px); }
-  56% { transform: rotate(-2deg) translateY(-2px); }
-  60% { transform: rotate(-5deg) translateY(-6px); }
-  64% { transform: rotate(-2.5deg) translateY(-3px); }
-  69% { transform: rotate(-6deg) translateY(-8px); }
-  80%, 100% { transform: rotate(0deg) translateY(0); }
+  0% { transform: rotate(0deg) translateY(0); }
+  28.3%, 30.9% { transform: rotate(2deg) translateY(2px); }
+  37.8% { transform: rotate(-7deg) translateY(-9px); }
+  45.2% { transform: rotate(-3deg) translateY(-3px); }
+  50.2% { transform: rotate(-5deg) translateY(-6px); }
+  53% { transform: rotate(-3deg) translateY(-3px); }
+  55.7% { transform: rotate(-5.5deg) translateY(-6px); }
+  58.7% { transform: rotate(-3deg) translateY(-3px); }
+  60.9% { transform: rotate(-5deg) translateY(-5px); }
+  64.3% { transform: rotate(-2.5deg) translateY(-2px); }
+  66.5% { transform: rotate(-4deg) translateY(-4px); }
+  69.6% { transform: rotate(-2deg) translateY(-2px); }
+  73% { transform: rotate(-4deg) translateY(-4px); }
+  77.8% { transform: rotate(-1deg) translateY(-1px); }
+  80.9% { transform: rotate(0deg) translateY(0); }
+  88.3% { transform: rotate(-2deg) translateY(-2px); }
+  94.3%, 100% { transform: rotate(0deg) translateY(0); }
 }
 
 @keyframes sk-machoire {
-  0%, 40% { transform: translateY(0); }
-  44% { transform: translateY(20px); }
-  48% { transform: translateY(5px); }
-  52% { transform: translateY(21px); }
-  56% { transform: translateY(5px); }
-  60% { transform: translateY(22px); }
-  64% { transform: translateY(5px); }
-  69% { transform: translateY(26px); }
-  80%, 100% { transform: translateY(0); }
+  0% { transform: translateY(0); }
+  17.4% { transform: translateY(1px); }
+  23.9% { transform: translateY(4px); }
+  28.3%, 30.9% { transform: translateY(2px); }
+  33.9% { transform: translateY(22px); }
+  37.8% { transform: translateY(26px); }
+  41.7% { transform: translateY(22px); }
+  43.5% { transform: translateY(12px); }
+  45.2% { transform: translateY(4px); }
+  47.8% { transform: translateY(18px); }
+  50.2% { transform: translateY(22px); }
+  53% { transform: translateY(5px); }
+  55.7% { transform: translateY(22px); }
+  58.7% { transform: translateY(6px); }
+  60.9% { transform: translateY(19px); }
+  64.3% { transform: translateY(4px); }
+  66.5% { transform: translateY(14px); }
+  69.6% { transform: translateY(5px); }
+  73% { transform: translateY(16px); }
+  75.2% { transform: translateY(12px); }
+  77.8% { transform: translateY(2px); }
+  80.9% { transform: translateY(0); }
+  85.2% { transform: translateY(6px); }
+  88.3% { transform: translateY(10px); }
+  91.3% { transform: translateY(6px); }
+  94.3%, 100% { transform: translateY(0); }
 }
 
+/* Les dreads, sur l'horloge de la scène : un sursaut à l'impact, puis un
+   balancement sur chaque éclat de rire (calé sur --son = 0,25 s). */
 @keyframes sk-dreads {
-  0%, 20% { transform: rotate(0deg); }
-  23% { transform: rotate(4deg); }
-  27% { transform: rotate(-2deg); }
-  31%, 40% { transform: rotate(0deg); }
-  46% { transform: rotate(3deg); }
-  54% { transform: rotate(-2deg); }
-  62% { transform: rotate(3deg); }
-  70% { transform: rotate(-3deg); }
-  80%, 100% { transform: rotate(0deg); }
+  0%, 17.9% { transform: rotate(0deg); }
+  20.5% { transform: rotate(4deg); }
+  24% { transform: rotate(-2deg); }
+  27.8%, 34.5% { transform: rotate(0deg); }
+  38.6% { transform: rotate(4deg); }
+  43% { transform: rotate(-2deg); }
+  48.4% { transform: rotate(3deg); }
+  50.5% { transform: rotate(-1.5deg); }
+  52.8% { transform: rotate(3deg); }
+  55% { transform: rotate(-1.5deg); }
+  56.9% { transform: rotate(2.5deg); }
+  59% { transform: rotate(-1deg); }
+  61.4% { transform: rotate(2deg); }
+  64% { transform: rotate(-1deg); }
+  66.6% { transform: rotate(2deg); }
+  70.7% { transform: rotate(0deg); }
+  78.6% { transform: rotate(1.5deg); }
+  83.4%, 100% { transform: rotate(0deg); }
 }
 
-/* Les yeux s'embrasent d'un coup, puis la flamme vacille */
+/* Les yeux s'embrasent d'un coup, puis flambent à chaque éclat de rire */
 @keyframes sk-oeil {
-  0%, 29% { opacity: 0; transform: scale(0); }
-  32% { opacity: 1; transform: scale(1.8); }
-  36% { transform: scale(1); }
-  42% { transform: scale(1.14); }
-  47% { transform: scale(0.94); }
-  53% { transform: scale(1.12); }
-  58% { transform: scale(0.96); }
-  64% { transform: scale(1.16); }
-  70% { transform: scale(0.95); }
-  77% { transform: scale(1.1); }
+  0%, 26% { opacity: 0; transform: scale(0); }
+  28.7% { opacity: 1; transform: scale(1.8); }
+  32.3%, 34.5% { transform: scale(1); }
+  38.6% { transform: scale(1.3); }
+  43% { transform: scale(0.95); }
+  48.4% { transform: scale(1.18); }
+  50.5% { transform: scale(0.97); }
+  52.8% { transform: scale(1.16); }
+  55% { transform: scale(0.97); }
+  56.9% { transform: scale(1.12); }
+  59% { transform: scale(0.98); }
+  61.4% { transform: scale(1.08); }
+  64% { transform: scale(0.98); }
+  66.6% { transform: scale(1.08); }
+  70.7% { transform: scale(0.96); }
+  78.6% { transform: scale(1.05); }
   86% { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(0.6); }
 }
 
 @keyframes sk-eclat {
-  0%, 29.5% { opacity: 0; transform: scaleX(0); }
-  32.5% { opacity: 1; transform: scaleX(1); }
-  42% { opacity: 0; transform: scaleX(1.6); }
+  0%, 26.4% { opacity: 0; transform: scaleX(0); }
+  29.1% { opacity: 1; transform: scaleX(1); }
+  37.7% { opacity: 0; transform: scaleX(1.6); }
   100% { opacity: 0; }
 }
 
@@ -1835,10 +1887,10 @@ button.etat.scelle {
 }
 
 @keyframes sk-titre {
-  0%, 33% { opacity: 0; transform: scale(2.6); }
-  37% { opacity: 1; transform: scale(0.92); }
-  40% { transform: scale(1.05); }
-  43% { transform: scale(1); }
+  0%, 29.6% { opacity: 0; transform: scale(2.6); }
+  33.2% { opacity: 1; transform: scale(0.92); }
+  35.9% { transform: scale(1.05); }
+  38.6% { transform: scale(1); }
   86% { opacity: 1; transform: scale(1.03); }
   100% { opacity: 0; transform: scale(1.14); }
 }
