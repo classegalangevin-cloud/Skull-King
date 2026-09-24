@@ -1124,6 +1124,8 @@ button.etat.scelle {
 
 /* ---------- Captures : trois saynètes en fondu enchaîné ---------- */
 
+/* Chaque scène fixe sa durée dans --duree : toutes ses pièces s'y calent. */
+
 .capture-scene {
   position: fixed;
   inset: 0;
@@ -1132,31 +1134,21 @@ button.etat.scelle {
   place-items: center;
   overflow: hidden;
   pointer-events: none;
-  animation: capture-voile 1800ms ease-in-out forwards;
+  animation: capture-voile var(--duree, 1800ms) ease-in-out forwards;
 }
 
-.capture-scene.or {
-  background: radial-gradient(
-    100% 70% at 50% 50%,
-    rgba(74, 28, 24, 0.94),
-    rgba(11, 9, 8, 0.95) 60%
-  );
-}
-
+/* Les deux scènes de sirène se passent sous l'eau : bleu acier pour la
+   prison, lagon pour le chant. */
 .capture-scene.fer {
-  background: radial-gradient(
-    100% 70% at 50% 50%,
-    rgba(38, 44, 50, 0.94),
-    rgba(9, 12, 15, 0.95) 60%
-  );
+  background:
+    radial-gradient(120% 50% at 50% -5%, rgba(120, 170, 200, 0.28), transparent 60%),
+    radial-gradient(100% 70% at 50% 50%, rgba(22, 48, 66, 0.95), rgba(4, 10, 16, 0.97) 70%);
 }
 
 .capture-scene.mer {
-  background: radial-gradient(
-    100% 70% at 50% 50%,
-    rgba(20, 56, 58, 0.94),
-    rgba(8, 18, 20, 0.95) 60%
-  );
+  background:
+    radial-gradient(120% 50% at 50% -5%, rgba(150, 235, 245, 0.35), transparent 60%),
+    radial-gradient(100% 70% at 50% 50%, rgba(16, 92, 118, 0.95), rgba(3, 22, 36, 0.97) 72%);
 }
 
 .capture-dessin {
@@ -1164,12 +1156,23 @@ button.etat.scelle {
   height: auto;
   grid-area: 1 / 1;
   margin-top: 6vh;
+  overflow: visible;
+}
+
+/* Les sirènes sont plus fines que le crâne : on agrandit leur dessin. Le
+   chant, dont le cadre est plus large, un peu plus encore. */
+.capture-scene.mer .capture-dessin {
+  width: min(88vw, 396px);
+}
+
+.capture-scene.fer .capture-dessin {
+  width: min(84vw, 370px);
 }
 
 .capture-sujet {
   transform-box: view-box;
   transform-origin: 120px 170px;
-  animation: capture-surgit 1800ms cubic-bezier(0.2, 1.1, 0.35, 1) forwards;
+  animation: capture-surgit var(--duree, 1800ms) cubic-bezier(0.2, 1.1, 0.35, 1) forwards;
 }
 
 .capture-titre {
@@ -1182,38 +1185,22 @@ button.etat.scelle {
   letter-spacing: 0.04em;
   color: var(--or-vif);
   text-shadow: 0 0 22px rgba(239, 196, 99, 0.5), 0 4px 16px rgba(0, 0, 0, 0.85);
-  animation: capture-titre 1800ms ease-out 260ms backwards;
+  animation: capture-titre var(--duree, 1800ms) ease-out 260ms backwards;
 }
 
-/* Le rire : la mâchoire claque deux fois, et le crâne tressaute avec elle. */
+/* La mâchoire du Skull King descend, elle ne pivote pas : chaque scène lui
+   donne son mouvement. */
 .capture-machoire {
   transform-box: view-box;
   transform-origin: 120px 226px;
-  animation: capture-rire 900ms ease-in-out 220ms 2 backwards;
 }
 
-.capture-skullking {
-  transform-box: view-box;
-  transform-origin: 120px 200px;
-  animation: capture-secousse 450ms ease-in-out 220ms 4 backwards;
-}
-
-/* La herse tombe d'un bloc et rebondit une fois sur ses gonds. */
-.capture-herse {
-  transform-box: view-box;
-  animation: capture-herse 620ms cubic-bezier(0.5, 0, 0.75, 1) 240ms backwards;
-}
-
-.capture-harpe {
-  transform-box: view-box;
-  transform-origin: 120px 200px;
-  animation: capture-harpe 1400ms ease-out 200ms backwards;
-}
-
-.capture-note {
+/* Pièces de l'envoûtement, éteintes tant qu'une scène ne les allume pas */
+.sk-envoute,
+.sk-fumee {
+  opacity: 0;
   transform-box: fill-box;
   transform-origin: center;
-  animation: capture-note 1100ms ease-out backwards;
 }
 
 @keyframes capture-voile {
@@ -1238,18 +1225,126 @@ button.etat.scelle {
   100% { opacity: 0; transform: scale(1.2); }
 }
 
-@keyframes capture-rire {
-  0% { transform: translateY(0); }
-  30% { transform: translateY(15px); }
-  62% { transform: translateY(4px); }
-  100% { transform: translateY(0); }
+/* ---------- Sirènes : fond marin et sirène animée ---------- */
+
+.fond-rai {
+  animation: fond-rai 3.2s ease-in-out infinite alternate;
 }
 
-@keyframes capture-secousse {
-  0% { transform: rotate(0deg) translateY(0); }
-  35% { transform: rotate(-3deg) translateY(-5px); }
-  70% { transform: rotate(2.5deg) translateY(2px); }
-  100% { transform: rotate(0deg) translateY(0); }
+.fond-bulle {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-name: fond-bulle;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+  animation-fill-mode: backwards;
+}
+
+.fond-poisson {
+  animation: fond-poisson var(--duree) linear forwards;
+}
+
+/* La chevelure ondule, les mèches de devant suivent à contretemps, la
+   nageoire bat. */
+.sirene-chevelure {
+  transform-box: fill-box;
+  transform-origin: 50% 12%;
+  animation: sirene-chevelure 2.2s ease-in-out infinite alternate;
+}
+
+.sirene-meche {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: sirene-meche 1.8s ease-in-out infinite alternate;
+}
+
+.sirene-meche.droite {
+  animation-delay: -0.9s;
+}
+
+.sirene-caudale {
+  transform-box: fill-box;
+  transform-origin: 4% 58%;
+  animation: sirene-caudale 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes fond-rai {
+  0% { opacity: 0.35; }
+  100% { opacity: 1; }
+}
+
+@keyframes fond-bulle {
+  0% { opacity: 0; transform: translate(0, 0); }
+  15% { opacity: 0.9; }
+  50% { transform: translate(calc(var(--dx) * -1), calc(var(--dy) * 0.5)); }
+  85% { opacity: 0.7; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)); }
+}
+
+@keyframes fond-poisson {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(calc(var(--dx) * 0.5), -3px); }
+  100% { transform: translate(var(--dx), 0); }
+}
+
+@keyframes sirene-chevelure {
+  0% { transform: rotate(-1.6deg) scaleX(0.98); }
+  100% { transform: rotate(1.6deg) scaleX(1.03); }
+}
+
+@keyframes sirene-meche {
+  0% { transform: rotate(-2deg); }
+  100% { transform: rotate(2.5deg); }
+}
+
+@keyframes sirene-caudale {
+  0% { transform: rotate(-7deg); }
+  100% { transform: rotate(6deg); }
+}
+
+/* ---------- Capture d'une sirène par un pirate ---------- */
+
+/* La sirène paraît, puis la herse tombe (≈ 0,88 s) : l'eau tremble, elle
+   sursaute, le sable se soulève, et ses doigts se referment sur les
+   barreaux. */
+
+/* Le titre attend que la herse soit tombée */
+.capture-scene.fer .capture-titre {
+  animation-delay: 820ms;
+}
+
+.capture-herse {
+  transform-box: view-box;
+  animation: capture-herse 560ms cubic-bezier(0.5, 0, 0.75, 1) 480ms backwards;
+}
+
+.fer-secousse {
+  animation: fer-secousse 380ms linear 880ms;
+}
+
+.fer-sursaut {
+  transform-box: view-box;
+  transform-origin: 120px 210px;
+  animation: fer-sursaut 460ms ease-out 870ms;
+}
+
+.fer-doigts {
+  animation: fer-apparait 160ms ease-out 900ms backwards;
+}
+
+.fer-poussiere {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fer-poussiere 1000ms ease-out 880ms backwards;
+}
+
+.fer-bulle {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fer-bulle 900ms ease-out backwards;
 }
 
 @keyframes capture-herse {
@@ -1259,16 +1354,493 @@ button.etat.scelle {
   100% { transform: translateY(0); }
 }
 
+@keyframes fer-secousse {
+  0% { transform: translate(0, 0); }
+  15% { transform: translate(-5px, 4px); }
+  32% { transform: translate(4px, -3px); }
+  50% { transform: translate(-3px, 2px); }
+  70% { transform: translate(2px, -1px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes fer-sursaut {
+  0% { transform: translateY(0) scale(1); }
+  25% { transform: translateY(4px) scale(0.97); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes fer-apparait {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes fer-poussiere {
+  0% { opacity: 0; transform: scale(0.3); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.8, 1.3) translateY(-6px); }
+}
+
+@keyframes fer-bulle {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  12% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.2); }
+}
+
+/* ---------- Capture du Skull King par une sirène ---------- */
+
+/* Horloge de 2,8 s :
+     0 → 18 %   la sirène paraît, harpe levée ; le Skull King flotte, défiant
+    14 → 55 %   les notes filent vers lui, les cordes vibrent
+    24 → 41 %   la portée d'or l'encercle et se referme
+    38 → 44 %   ses braises s'éteignent dans un filet de fumée
+    44 → 53 %   deux spirales s'allument : il est envoûté, mâchoire pendante
+    50 → 100 %  il coule doucement */
+
+/* Le titre attend que le sort ait pris */
+.capture-scene.mer .capture-titre {
+  text-shadow: 0 0 20px rgba(90, 235, 215, 0.55), 0 4px 16px rgba(0, 0, 0, 0.85);
+  animation-delay: 1150ms;
+}
+
+.capture-harpe {
+  transform-box: view-box;
+  transform-origin: 24px 284px;
+  animation: capture-harpe 900ms ease-out 150ms backwards;
+}
+
+.mer-cordes {
+  animation: mer-cordes 110ms linear 400ms 12 alternate;
+}
+
+.mer-note {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mer-note 1100ms ease-out backwards;
+}
+
+.mer-etincelle {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mer-etincelle 700ms ease-in-out infinite backwards;
+}
+
+.mer-sk {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mer-sk var(--duree) ease-in-out forwards;
+}
+
+.mer-portee path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+.mer-portee.arriere path {
+  animation: mer-portee-arriere var(--duree) linear forwards;
+}
+
+.mer-portee.avant path {
+  animation: mer-portee-avant var(--duree) linear forwards;
+}
+
+.mer-portee-notes {
+  opacity: 0;
+  animation: mer-portee-notes var(--duree) ease-out forwards;
+}
+
+.mer-bulle-sk {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fer-bulle 1100ms ease-out backwards;
+}
+
+.capture-scene.mer .sk-oeil {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mer-oeil var(--duree) linear forwards;
+}
+
+.capture-scene.mer .sk-eclat {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: mer-eclat var(--duree) ease-out forwards;
+}
+
+.capture-scene.mer .sk-envoute {
+  animation: mer-envoute var(--duree) ease-out forwards;
+}
+
+.capture-scene.mer .sk-fumee {
+  animation: mer-fumee var(--duree) ease-out forwards;
+}
+
+.capture-scene.mer .capture-machoire {
+  animation: mer-machoire var(--duree) ease-in-out forwards;
+}
+
+.capture-scene.mer .sk-dreads {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: mer-dreads 1.6s ease-in-out infinite alternate;
+}
+
 @keyframes capture-harpe {
   0% { opacity: 0; transform: rotate(-12deg) scale(0.9); }
-  30% { opacity: 1; transform: rotate(0deg) scale(1); }
+  40% { opacity: 1; transform: rotate(2deg) scale(1); }
   100% { opacity: 1; transform: rotate(0deg) scale(1); }
 }
 
-@keyframes capture-note {
-  0% { opacity: 0; transform: translateY(26px) scale(0.5); }
-  30% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(-58px) scale(1.05); }
+@keyframes mer-cordes {
+  0% { transform: translateX(-0.6px); }
+  100% { transform: translateX(0.6px); }
+}
+
+@keyframes mer-note {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  20% { opacity: 1; transform: translate(calc(var(--dx) * 0.15 + 6px), calc(var(--dy) * 0.2)) scale(1); }
+  60% { opacity: 1; transform: translate(calc(var(--dx) * 0.6 - 5px), calc(var(--dy) * 0.6)) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.7); }
+}
+
+@keyframes mer-etincelle {
+  0% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(45deg); }
+  100% { opacity: 0; transform: scale(0) rotate(90deg); }
+}
+
+@keyframes mer-sk {
+  0% { transform: translate(0, -8px) rotate(-3deg); }
+  18% { transform: translate(0, 6px) rotate(2deg); }
+  34% { transform: translate(0, -4px) rotate(-3deg); }
+  40% { transform: translate(0, -6px) rotate(-2deg) scale(1.04); }
+  50% { transform: translate(0, 8px) rotate(6deg) scale(1); }
+  100% { transform: translate(0, 40px) rotate(12deg); }
+}
+
+@keyframes mer-portee-arriere {
+  0%, 24% { stroke-dashoffset: 100; }
+  33%, 100% { stroke-dashoffset: 0; }
+}
+
+@keyframes mer-portee-avant {
+  0%, 32% { stroke-dashoffset: 100; }
+  41%, 100% { stroke-dashoffset: 0; }
+}
+
+@keyframes mer-portee-notes {
+  0%, 40% { opacity: 0; }
+  46%, 100% { opacity: 1; }
+}
+
+@keyframes mer-oeil {
+  0% { opacity: 1; transform: scale(0.9); }
+  8% { transform: scale(1.1); }
+  16% { transform: scale(0.95); }
+  24% { transform: scale(1.12); }
+  32% { transform: scale(0.96); }
+  38% { opacity: 1; transform: scale(1.5); }
+  43%, 100% { opacity: 0; transform: scale(0.1); }
+}
+
+@keyframes mer-eclat {
+  0%, 37% { opacity: 0; transform: scaleX(0); }
+  40% { opacity: 1; transform: scaleX(1); }
+  46%, 100% { opacity: 0; transform: scaleX(1.5); }
+}
+
+@keyframes mer-envoute {
+  0%, 42% { opacity: 0; transform: scale(0); }
+  48% { opacity: 1; transform: scale(1.35); }
+  53%, 100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes mer-fumee {
+  0%, 41% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  47% { opacity: 0.8; }
+  75%, 100% { opacity: 0; transform: translate(0, -50px) scale(2); }
+}
+
+@keyframes mer-machoire {
+  0%, 44% { transform: translateY(0); }
+  52% { transform: translateY(20px); }
+  60% { transform: translateY(15px); }
+  70% { transform: translateY(19px); }
+  100% { transform: translateY(17px); }
+}
+
+@keyframes mer-dreads {
+  0% { transform: rotate(-3deg); }
+  100% { transform: rotate(3deg); }
+}
+
+/* ---------- Capture d'un pirate par le Skull King ---------- */
+
+/* Tout est calé sur une seule horloge de 2,6 s : chaque pièce joue sa partie
+   en pourcentage de cette durée, ce qui garde l'impact, l'embrasement des
+   yeux et le rire parfaitement synchrones.
+     0 → 10 %   les sabres jaillissent des coins et se croisent
+    10 → 20 %   le crâne tombe dessus — impact, onde de choc, secousse
+    30 → 36 %   les orbites s'embrasent
+    40 → 72 %   il ricane, tête renversée
+    86 → 100 %  tout s'éteint */
+
+.capture-scene.braise {
+  background:
+    radial-gradient(120% 60% at 50% 105%, rgba(255, 110, 20, 0.55), transparent 60%),
+    radial-gradient(90% 65% at 50% 48%, rgba(96, 22, 10, 0.95), rgba(8, 5, 4, 0.97) 70%);
+  animation-name: sk-voile;
+}
+
+/* Éclair orange au moment de l'impact */
+.capture-scene.braise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(60% 45% at 50% 50%, rgba(255, 214, 140, 0.9), rgba(255, 90, 20, 0.35) 55%, transparent 80%);
+  opacity: 0;
+  animation: sk-flash var(--duree) linear forwards;
+}
+
+.capture-scene.braise .capture-sujet {
+  animation: none;
+}
+
+.sk-secousse {
+  animation: sk-secousse var(--duree) linear forwards;
+}
+
+.sk-halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sk-halo var(--duree) ease-out forwards;
+}
+
+.sk-rayons {
+  animation: sk-rayons var(--duree) linear forwards;
+}
+
+.sk-sabre {
+  animation: sk-sabre var(--duree) cubic-bezier(0.6, 0, 0.9, 0.6) forwards;
+}
+
+/* L'éclat qui file le long des lames, juste après l'impact */
+.sk-reflet {
+  stroke-dasharray: 34 400;
+  opacity: 0;
+  animation: sk-reflet var(--duree) ease-out forwards;
+}
+
+.sk-onde {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: sk-onde var(--duree) ease-out forwards;
+}
+
+.sk-tete {
+  transform-box: view-box;
+  transform-origin: 120px 290px;
+  animation: sk-tete var(--duree) linear forwards;
+}
+
+.sk-rire {
+  transform-box: view-box;
+  transform-origin: 120px 280px;
+  animation: sk-rire var(--duree) ease-in-out forwards;
+}
+
+.capture-scene.braise .capture-machoire {
+  animation: sk-machoire var(--duree) ease-in-out forwards;
+}
+
+.sk-dreads {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: sk-dreads var(--duree) ease-in-out forwards;
+}
+
+.sk-oeil {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sk-oeil var(--duree) linear forwards;
+}
+
+.sk-eclat {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: sk-eclat var(--duree) ease-out forwards;
+}
+
+.sk-braise {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-name: sk-braise;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+  animation-fill-mode: backwards;
+}
+
+.capture-scene.braise .capture-titre {
+  color: #ffd98a;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 0 14px rgba(255, 120, 30, 0.9),
+    0 0 38px rgba(220, 50, 10, 0.7),
+    0 5px 18px rgba(0, 0, 0, 0.95);
+  animation: sk-titre var(--duree) linear forwards;
+}
+
+@keyframes sk-voile {
+  0% { opacity: 0; }
+  6% { opacity: 1; }
+  86% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes sk-flash {
+  0%, 19% { opacity: 0; }
+  20.5% { opacity: 1; }
+  32% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes sk-secousse {
+  0%, 20% { transform: translate(0, 0); }
+  21% { transform: translate(-8px, 6px); }
+  22.5% { transform: translate(7px, -5px); }
+  24% { transform: translate(-5px, 3px); }
+  25.5% { transform: translate(3px, -2px); }
+  27% { transform: translate(-1px, 1px); }
+  28.5%, 100% { transform: translate(0, 0); }
+}
+
+@keyframes sk-halo {
+  0% { opacity: 0; transform: scale(0.5); }
+  19% { opacity: 0.35; transform: scale(0.7); }
+  24% { opacity: 1; transform: scale(1.12); }
+  32% { transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.04); }
+  70% { opacity: 1; transform: scale(0.98); }
+  100% { opacity: 0.9; transform: scale(1.05); }
+}
+
+@keyframes sk-rayons {
+  0%, 18% { opacity: 0; transform: rotate(0deg); }
+  26% { opacity: 1; }
+  100% { opacity: 1; transform: rotate(38deg); }
+}
+
+@keyframes sk-sabre {
+  0% { transform: translateY(360px); }
+  9% { transform: translateY(-8px); }
+  11%, 100% { transform: translateY(0); }
+}
+
+@keyframes sk-reflet {
+  0%, 21% { stroke-dashoffset: 40; opacity: 0; }
+  23% { opacity: 1; }
+  36% { stroke-dashoffset: -300; opacity: 0.9; }
+  38%, 100% { stroke-dashoffset: -300; opacity: 0; }
+}
+
+@keyframes sk-onde {
+  0%, 19.5% { opacity: 0; transform: scale(0.4); stroke-width: 8px; }
+  20.5% { opacity: 1; }
+  38% { opacity: 0; transform: scale(3); stroke-width: 1px; }
+  100% { opacity: 0; transform: scale(3); }
+}
+
+@keyframes sk-tete {
+  0%, 9% { opacity: 0; transform: translateY(-230px) scale(1.3); }
+  10% { opacity: 1; transform: translateY(-230px) scale(1.3); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+  20% { transform: translateY(0) scale(1); animation-timing-function: ease-out; }
+  22% { transform: translateY(5px) scale(1.07, 0.92); }
+  25% { transform: translateY(-3px) scale(0.97, 1.03); }
+  28%, 86% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 1; transform: translateY(0) scale(1.08); }
+}
+
+/* Le rire : quatre ricanements, la tête renversée un peu plus à chacun,
+   puis la mâchoire se referme sur un rictus. */
+@keyframes sk-rire {
+  0%, 40% { transform: rotate(0deg) translateY(0); }
+  44% { transform: rotate(-3deg) translateY(-4px); }
+  48% { transform: rotate(-1.5deg) translateY(-1px); }
+  52% { transform: rotate(-4deg) translateY(-5px); }
+  56% { transform: rotate(-2deg) translateY(-2px); }
+  60% { transform: rotate(-5deg) translateY(-6px); }
+  64% { transform: rotate(-2.5deg) translateY(-3px); }
+  69% { transform: rotate(-6deg) translateY(-8px); }
+  80%, 100% { transform: rotate(0deg) translateY(0); }
+}
+
+@keyframes sk-machoire {
+  0%, 40% { transform: translateY(0); }
+  44% { transform: translateY(20px); }
+  48% { transform: translateY(5px); }
+  52% { transform: translateY(21px); }
+  56% { transform: translateY(5px); }
+  60% { transform: translateY(22px); }
+  64% { transform: translateY(5px); }
+  69% { transform: translateY(26px); }
+  80%, 100% { transform: translateY(0); }
+}
+
+@keyframes sk-dreads {
+  0%, 20% { transform: rotate(0deg); }
+  23% { transform: rotate(4deg); }
+  27% { transform: rotate(-2deg); }
+  31%, 40% { transform: rotate(0deg); }
+  46% { transform: rotate(3deg); }
+  54% { transform: rotate(-2deg); }
+  62% { transform: rotate(3deg); }
+  70% { transform: rotate(-3deg); }
+  80%, 100% { transform: rotate(0deg); }
+}
+
+/* Les yeux s'embrasent d'un coup, puis la flamme vacille */
+@keyframes sk-oeil {
+  0%, 29% { opacity: 0; transform: scale(0); }
+  32% { opacity: 1; transform: scale(1.8); }
+  36% { transform: scale(1); }
+  42% { transform: scale(1.14); }
+  47% { transform: scale(0.94); }
+  53% { transform: scale(1.12); }
+  58% { transform: scale(0.96); }
+  64% { transform: scale(1.16); }
+  70% { transform: scale(0.95); }
+  77% { transform: scale(1.1); }
+  86% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.6); }
+}
+
+@keyframes sk-eclat {
+  0%, 29.5% { opacity: 0; transform: scaleX(0); }
+  32.5% { opacity: 1; transform: scaleX(1); }
+  42% { opacity: 0; transform: scaleX(1.6); }
+  100% { opacity: 0; }
+}
+
+@keyframes sk-braise {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  15% { opacity: 1; }
+  70% { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.2); }
+}
+
+@keyframes sk-titre {
+  0%, 33% { opacity: 0; transform: scale(2.6); }
+  37% { opacity: 1; transform: scale(0.92); }
+  40% { transform: scale(1.05); }
+  43% { transform: scale(1); }
+  86% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 0; transform: scale(1.14); }
 }
 
 /* ---------- Choix du mode de comptage ---------- */
