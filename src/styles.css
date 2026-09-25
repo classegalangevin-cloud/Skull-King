@@ -900,7 +900,7 @@ button.etat.scelle {
   z-index: 1;
 }
 
-/* --- La bête surgit et engloutit l'écran --- */
+/* --- La tête surgit en fondu, puis replonge vers le bas --- */
 
 .kraken-scene {
   position: fixed;
@@ -927,18 +927,7 @@ button.etat.scelle {
 .kraken-corps {
   transform-box: view-box;
   transform-origin: 200px 640px;
-  animation: kraken-surgit 2400ms cubic-bezier(0.3, 0, 0.2, 1) forwards;
-}
-
-.kraken-bras {
-  transform-box: view-box;
-  animation: kraken-deploie 1150ms cubic-bezier(0.22, 1.1, 0.36, 1) backwards;
-}
-
-/* Les bras ondulent sans fin une fois déployés, chacun à son rythme */
-.kraken-ondule {
-  transform-box: view-box;
-  animation: kraken-ondule 1.5s ease-in-out infinite alternate;
+  animation: kraken-surgit 2400ms ease-out forwards;
 }
 
 /* Les yeux s'ouvrent, clignent une fois, puis couvent ; leur lueur sur
@@ -972,18 +961,15 @@ button.etat.scelle {
   100% { opacity: 0; }
 }
 
-/* Montée depuis les profondeurs, temps d'arrêt, puis la masse avale le cadre. */
+/* La tête monte des profondeurs en fondu, s'arrête le temps d'ouvrir les yeux
+   et de cligner (0,7 → 1,6 s), puis replonge vers le bas, de plus en plus
+   vite, et quitte l'écran pendant que le voile s'efface. Les bras
+   n'apparaissent qu'ensuite, agrippés aux bords. */
 @keyframes kraken-surgit {
-  0% { transform: translateY(24%) scale(0.9); }
-  46% { transform: translateY(0) scale(1); }
-  64% { transform: translateY(0) scale(1.04); }
-  100% { transform: translateY(-8%) scale(3); }
-}
-
-@keyframes kraken-deploie {
-  0% { transform: scale(0.05); }
-  62% { transform: scale(1.06); }
-  100% { transform: scale(1); }
+  0% { opacity: 0; transform: translateY(20%) scale(0.94); }
+  28% { opacity: 1; transform: translateY(0) scale(1); }
+  70% { opacity: 1; transform: translateY(0) scale(1.03); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6); }
+  100% { opacity: 1; transform: translateY(105%) scale(1); }
 }
 
 @keyframes kraken-regard {
@@ -992,11 +978,6 @@ button.etat.scelle {
   50% { opacity: 1; transform: scaleY(1); }
   55% { opacity: 0.6; transform: scaleY(0.15); }
   62%, 100% { opacity: 1; transform: scaleY(1); }
-}
-
-@keyframes kraken-ondule {
-  0% { transform: rotate(-2.5deg); }
-  100% { transform: rotate(2.5deg); }
 }
 
 @keyframes kraken-cri {

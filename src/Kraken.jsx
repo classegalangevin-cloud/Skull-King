@@ -2,9 +2,11 @@ import { useEffect } from 'react'
 
 import { mouvementReduit } from './mouvement.js'
 
-// Animation jouée quand le Kraken est déclaré : la bête monte des profondeurs,
-// déploie ses huit bras, ouvre deux yeux de braise sous des arcades plissées de
-// colère, puis sa masse engloutit l'écran avant de se dissoudre.
+// Animation jouée quand le Kraken est déclaré : seule la tête paraît. Elle
+// monte des profondeurs en fondu, ouvre deux yeux de braise sous des arcades
+// plissées de colère, cligne, puis replonge vers le bas de l'écran. Ses bras,
+// eux, ne se montrent qu'ensuite : agrippés aux bords du cadre (EmpriseKraken)
+// tant que le Kraken reste déclaré.
 //
 // D'après une gravure de kraken, dans la chair rouge sombre de l'appli : peau
 // tachetée, manteau énorme et ridé, bras enroulés en crosse à la pointe,
@@ -95,7 +97,7 @@ function traceBras({ x, y, angle, longueur, epaisseur, courbe = 0, boucle = 0, s
 }
 
 // Un bras dessiné : peau, dessous clair, taches, reflet, puis les ventouses —
-// un anneau orangé, un creux sombre, un éclat.
+// un anneau doré, un creux sombre, un éclat.
 function Bras({ trace, peau, dessous }) {
   return (
     <g>
@@ -125,31 +127,6 @@ function Bras({ trace, peau, dessous }) {
   )
 }
 
-// Les huit bras de la scène : quatre à gauche, reflétés à droite. « arriere »
-// passe derrière la tête, « avant » devant. Tous partent de sous les yeux :
-//   un bras qui monte derrière le manteau et s'enroule au-dessus,
-//   un qui se dresse sur le flanc, à côté de l'œil,
-//   deux qui retombent devant, en crosse, dans les coins du bas.
-// `retard` décale leur sortie.
-const BRAS_GAUCHE = [
-  { x: 150, y: 520, angle: -94, longueur: 440, epaisseur: 58, courbe: 50, boucle: -380, retard: 0.1, plan: 'arriere' },
-  { x: 140, y: 540, angle: -140, longueur: 250, epaisseur: 48, courbe: 30, boucle: 300, retard: 0.2, plan: 'avant' },
-  { x: 170, y: 566, angle: 160, longueur: 210, epaisseur: 54, courbe: -40, boucle: -280, retard: 0.05, plan: 'avant' },
-  { x: 150, y: 546, angle: -178, longueur: 190, epaisseur: 46, courbe: -60, boucle: -280, retard: 0.24, plan: 'avant' },
-]
-
-const BRAS = [
-  ...BRAS_GAUCHE,
-  ...BRAS_GAUCHE.map((b) => ({
-    ...b,
-    x: 400 - b.x,
-    angle: 180 - b.angle,
-    courbe: -b.courbe,
-    boucle: -b.boucle,
-    retard: b.retard + 0.07,
-  })),
-].map((b) => ({ ...b, trace: traceBras(b) }))
-
 const DUREE = 2400
 
 /* ------------------------------------------------------------------ */
@@ -157,10 +134,11 @@ const DUREE = 2400
 /* ------------------------------------------------------------------ */
 
 // Un manteau énorme en forme de sac, deux yeux saillants sur des bosses de
-// chaque côté, et entre eux un visage court qui se fond aussitôt dans les
-// racines des bras. Rien d'humain : pas de front, pas de joues.
+// chaque côté, et sous eux le corps qui s'évase et plonge dans le noir, là
+// où naissent les bras qu'on ne voit pas. Rien d'humain : pas de front, pas
+// de joues, pas de menton.
 const TETE =
-  'M200 236 C132 236, 80 288, 78 356 C76 404, 92 436, 108 456 C92 470, 88 500, 104 516 C118 530, 140 530, 152 524 C160 540, 168 552, 176 566 L224 566 C232 552, 240 540, 248 524 C260 530, 282 530, 296 516 C312 500, 308 470, 292 456 C308 436, 324 404, 322 356 C320 288, 268 236, 200 236 Z'
+  'M200 236 C132 236, 80 288, 78 356 C76 404, 92 436, 108 456 C92 470, 88 500, 104 516 C118 530, 136 532, 148 528 C140 552, 124 580, 108 640 L292 640 C276 580, 260 552, 252 528 C264 532, 282 530, 296 516 C312 500, 308 470, 292 456 C308 436, 324 404, 322 356 C320 288, 268 236, 200 236 Z'
 
 // Grandes taches sombres du manteau
 const TACHES_TETE = [
@@ -292,20 +270,18 @@ function Tete() {
         <path d="M292 330 C280 344, 284 360, 274 374" />
       </g>
 
-      {/* Visage : plis de colère entre les yeux, racines des bras */}
+      {/* Visage : plis de colère entre les yeux, rides qui descendent */}
       <g fill="none" stroke="#140504" strokeLinecap="round">
         <path d="M184 468 C190 484, 192 500, 190 516 M216 468 C210 484, 208 500, 210 516" strokeOpacity="0.55" strokeWidth="1.8" />
         <path d="M200 450 L200 478" strokeOpacity="0.45" strokeWidth="1.4" />
-        <path d="M176 506 C180 524, 182 540, 180 556 M224 506 C220 524, 218 540, 220 556" strokeOpacity="0.4" strokeWidth="1.5" />
-        <path d="M156 538 C172 548, 188 552, 200 552 C212 552, 228 548, 244 538" strokeOpacity="0.45" strokeWidth="1.8" />
+        <path d="M176 506 C178 524, 176 544, 170 566 M224 506 C222 524, 224 544, 230 566" strokeOpacity="0.4" strokeWidth="1.5" />
       </g>
-      {/* Bec, luisant entre les bras */}
-      <ellipse cx="200" cy="578" rx="21" ry="11" fill="#050307" />
-      <path d="M187 572 C190 586, 195 596, 200 604 C205 596, 210 586, 213 572 C206 578, 194 578, 187 572 Z" fill="#241510" />
-      <path d="M191 576 C194 586, 197 592, 200 598" fill="none" stroke="#8a664c" strokeOpacity="0.6" strokeWidth="1.2" />
 
       <Oeil />
       <Oeil miroir />
+
+      {/* Le bas du corps se perd dans le noir des profondeurs */}
+      <rect x="0" y="524" width="400" height="120" fill="url(#kraken-abysse)" />
     </g>
   )
 }
@@ -346,7 +322,7 @@ const ANCRAGES = [
   { classe: 'bord b', trace: BORD },
 ]
 
-// Dégradés partagés par les bras de la scène et ceux de l'emprise
+// Dégradés des bras de l'emprise
 function DegradesBras({ prefixe }) {
   return (
     <>
@@ -402,22 +378,6 @@ export default function AnimationKraken({ onFini }) {
 
   if (sansAnimation) return null
 
-  // Un bras : il se déploie depuis sa base, puis ondule sans fin.
-  const bras = (b, i) => (
-    <g
-      className="kraken-bras"
-      key={i}
-      style={{ transformOrigin: `${b.x}px ${b.y}px`, animationDelay: `${b.retard}s` }}
-    >
-      <g
-        className="kraken-ondule"
-        style={{ transformOrigin: `${b.x}px ${b.y}px`, animationDelay: `${-i * 0.37}s` }}
-      >
-        <Bras trace={b.trace} peau="kraken-bras-peau" dessous="kraken-bras-dessous" />
-      </g>
-    </g>
-  )
-
   return (
     <div className="kraken-scene" role="presentation">
       <svg
@@ -427,7 +387,11 @@ export default function AnimationKraken({ onFini }) {
         aria-hidden="true"
       >
         <defs>
-          <DegradesBras prefixe="kraken-bras" />
+          <linearGradient id="kraken-abysse" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#120706" stopOpacity="0" />
+            <stop offset="65%" stopColor="#120706" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#120706" />
+          </linearGradient>
           <radialGradient id="kraken-tete" cx="0.42" cy="0.28" r="0.8">
             <stop offset="0%" stopColor="#b0543c" />
             <stop offset="35%" stopColor="#6d2a1e" />
@@ -448,11 +412,9 @@ export default function AnimationKraken({ onFini }) {
         </defs>
 
         <g className="kraken-corps">
-          {/* La masse sombre qui remonte des profondeurs */}
+          {/* La masse sombre qui remonte des profondeurs avec la tête */}
           <ellipse cx="200" cy="676" rx="230" ry="110" fill="#120706" />
-          {BRAS.filter((b) => b.plan === 'arriere').map(bras)}
           <Tete />
-          {BRAS.filter((b) => b.plan === 'avant').map((b, i) => bras(b, i + 4))}
         </g>
       </svg>
 
